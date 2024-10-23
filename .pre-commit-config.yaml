@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0  # Use the ref you want to point at
+    hooks:
+    -   id: trailing-whitespace
+    -   id: check-added-large-files
+    -   id: detect-aws-credentials
+    -   id: detect-private-key
+    -   id: end-of-file-fixer
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.96.1
+    hooks:
+      - id: terraform_fmt
+        args:
+          - --args=-recursive
+      - id: terraform_tflint
+      #- id: terraform_tfsec
+      - id: terraform_docs
+        args:
+          - "--hook-config=--path-to-file=./README.md"
+          - "--args=--indent=3 --anchor=false --escape=false --sort=false --html=false"
