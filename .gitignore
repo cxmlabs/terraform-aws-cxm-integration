@@ -1,0 +1,9 @@
+build/*
+tmp/
+*.DS_Store
+.idea
+.terraform
+**/.terraform*
+*.tfstate
+*.tfstate.*
+tfplan
