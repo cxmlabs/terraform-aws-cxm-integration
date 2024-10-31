@@ -9,7 +9,7 @@ This module enables CXM roles in your AWS account and organization.
 
 Usage example to setup your account, when using AWS Organisation :
 
-```
+```hcl
 module "cxm-integration" {
   source  = "cxmlabs/cxm-integration/aws"
   version = "0.1.0"
@@ -38,7 +38,7 @@ If your AWS account is not using AWS Organization, and you have a single "lone" 
 then you could skip the different AWS provider config with multiple profiles
 and use the `use_lone_account_instead_of_aws_organization = true` flag :
 
-```
+```hcl
 provider "aws" {
   region  = "us-east-1"
   profile = "my-company-account"
@@ -72,7 +72,7 @@ module "cxm-integration" {
 
 Providers should be setup based on where you store your CUR bucket and your cloudtrail logs bucket.
 
-```
+```hcl
 # Provider for the AWS Organization Management Account in us-east-1
 # Required to deploy the CUR Crawler
 provider "aws" {
