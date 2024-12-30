@@ -31,7 +31,7 @@ variable "use_existing_iam_role_policy" {
 
 variable "iam_role_arn" {
   type        = string
-  default     = ""
+  default     = null
   description = "IAM role ARN to use. Required when setting use_existing_iam_role to `true`."
 }
 
@@ -44,7 +44,7 @@ variable "permission_boundary_arn" {
 
 variable "cxm_benchmarking_policy_name" {
   type        = string
-  default     = ""
+  default     = null
   description = "The name of the policy used to enrich ReadOnly to allow Cloud ex Machina to read the Control Plane.  Defaults to cxm-account-ro-$${random_id.uniq.hex} when empty."
 }
 

@@ -6,7 +6,7 @@ variable "dry_run" {
 
 variable "iam_role_name" {
   type        = string
-  default     = ""
+  default     = null
   description = "The IAM role name"
 }
 
@@ -19,13 +19,13 @@ variable "cxm_aws_account_id" {
 
 variable "cxm_role_name" {
   type        = string
-  default     = ""
+  default     = null
   description = "Name of the IAM role in the Cloud ex Machina AWS account that will assume this execution role"
 }
 
 variable "external_id" {
   type        = string
-  default     = ""
+  default     = null
   description = "External ID provided by Cloud ex Machina to configure the role."
 }
 

@@ -3,7 +3,7 @@ locals {
   iam_role_name        = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.name : var.iam_role_name
   iam_role_external_id = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.external_id : var.cxm_external_id
   cxm_benchmarking_policy_name = (
-    length(var.cxm_benchmarking_policy_name) > 0 ? var.cxm_benchmarking_policy_name : "cxm-benchmarking-${random_id.uniq.hex}"
+    var.cxm_benchmarking_policy_name != null ? var.cxm_benchmarking_policy_name : "cxm-benchmarking-${random_id.uniq.hex}"
   )
 }
 

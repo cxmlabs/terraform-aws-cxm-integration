@@ -50,9 +50,9 @@ Lambda Benchmarking requires permissions to duplicate existing lambda versions a
 | iam_role_name | Name of the IAM role to set. Required to match with iam_role_arn if use_existing_iam_role is set to `true`. | `string` | n/a | yes |
 | use_existing_iam_role | Set to true in order to use a pre-existing IAM role. Set iam_role_arn if you do. | `bool` | `false` | no |
 | use_existing_iam_role_policy | Set this to `true` to use an existing policy on the IAM role, rather than attaching a new one. | `bool` | `false` | no |
-| iam_role_arn | IAM role ARN to use. Required when setting use_existing_iam_role to `true`. | `string` | `""` | no |
+| iam_role_arn | IAM role ARN to use. Required when setting use_existing_iam_role to `true`. | `string` | `null` | no |
 | permission_boundary_arn | Optional - ARN of a policy that is used to contraint permissions boundary for the role. | `string` | `null` | no |
-| cxm_benchmarking_policy_name | The name of the policy used to enrich ReadOnly to allow Cloud ex Machina to read the Control Plane.  Defaults to cxm-account-ro-${random_id.uniq.hex} when empty. | `string` | `""` | no |
+| cxm_benchmarking_policy_name | The name of the policy used to enrich ReadOnly to allow Cloud ex Machina to read the Control Plane.  Defaults to cxm-account-ro-${random_id.uniq.hex} when empty. | `string` | `null` | no |
 | tags | A map/dictionary of Tags to be assigned to created resources. | `map(string)` | `{}` | no |
 
 ### Outputs

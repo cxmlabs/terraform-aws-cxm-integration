@@ -40,10 +40,10 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | dry_run | Setting dry_run to `true` will prevent the module from creating new resources. | `bool` | `false` | no |
-| iam_role_name | The IAM role name | `string` | `""` | no |
+| iam_role_name | The IAM role name | `string` | `null` | no |
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access. | `string` | `"596683793973"` | no |
-| cxm_role_name | Name of the IAM role in the Cloud ex Machina AWS account that will assume this execution role | `string` | `""` | no |
-| external_id | External ID provided by Cloud ex Machina to configure the role. | `string` | `""` | no |
+| cxm_role_name | Name of the IAM role in the Cloud ex Machina AWS account that will assume this execution role | `string` | `null` | no |
+| external_id | External ID provided by Cloud ex Machina to configure the role. | `string` | `null` | no |
 | permission_boundary_arn | Optional - ARN of the policy that is used to set the permissions boundary for the role. | `string` | `null` | no |
 | tags | A map/dictionary of Tags to be assigned to created resources. | `map(string)` | `{}` | no |
 

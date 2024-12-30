@@ -1,7 +1,7 @@
 locals {
-  iam_role_name = length(var.iam_role_name) > 0 ? var.iam_role_name : "cxm-iam-role-${random_id.uniq.hex}"
-  external_id   = length(var.external_id) > 0 ? "cxm:${var.external_id}" : "cxm:${random_id.uniq.hex}"
-  principal     = length(var.cxm_role_name) == 0 ? "arn:aws:iam::${var.cxm_aws_account_id}:root" : "arn:aws:iam::${var.cxm_aws_account_id}:role/${var.cxm_role_name}"
+  iam_role_name = var.iam_role_name != null ? var.iam_role_name : "cxm-iam-role-${random_id.uniq.hex}"
+  external_id   = var.external_id != null ? "cxm:${var.external_id}" : "cxm:${random_id.uniq.hex}"
+  principal     = var.cxm_role_name != null ? "arn:aws:iam::${var.cxm_aws_account_id}:role/${var.cxm_role_name}" : "arn:aws:iam::${var.cxm_aws_account_id}:root"
 }
 
 resource "random_id" "uniq" {
