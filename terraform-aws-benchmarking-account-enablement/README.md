@@ -1,4 +1,4 @@
-# CXM AWS Lone Account Enablement
+# CXM AWS Benchmarking Enablement
 
 ## Description
 
