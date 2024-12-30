@@ -28,6 +28,7 @@ Resources:
       RoleName: !Sub '${Prefix}-asset-crawler'
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
+      MaxSessionDuration: 43200
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -91,6 +92,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       RoleName: !Sub '${Prefix}-feedback-loop-control-plane'
+      MaxSessionDuration: 43200
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:

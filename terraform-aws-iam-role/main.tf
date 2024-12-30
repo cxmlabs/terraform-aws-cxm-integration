@@ -35,4 +35,5 @@ resource "aws_iam_role" "cxm_iam_role" {
   assume_role_policy   = data.aws_iam_policy_document.cxm_assume_role_policy[count.index].json
   permissions_boundary = var.permission_boundary_arn
   tags                 = var.tags
+  max_session_duration = 12 * 3600
 }
