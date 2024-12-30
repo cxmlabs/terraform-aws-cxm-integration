@@ -26,6 +26,7 @@ No providers.
 | enable_root_organization | ./terraform-aws-organization-enablement | n/a |
 | enable_sub_accounts | ./terraform-aws-full-organization-enablement | n/a |
 | enable_lone_account | ./terraform-aws-account-enablement | n/a |
+| enable_benchmarking_account | ./terraform-aws-benchmarking-account-enablement | n/a |
 | enable_cur | ./terraform-aws-s3-bucket-read | n/a |
 | enable_cloudtrail | ./terraform-aws-s3-bucket-read | n/a |
 
@@ -44,6 +45,7 @@ No resources.
 | disable_asset_discovery | Disable asset discovery permissions. This is strongly discouraged and will limit a lot the services provided by CXM. Enable by default. | `bool` | `false` | no |
 | disable_cloudtrail_analysis | Disable Cloudtrail analysis permissions. This is strongly discouraged and will limit a lot the services provided by CXM. Enable by default. | `bool` | `false` | no |
 | use_lone_account_instead_of_aws_organization | If your AWS account is not using AWS Organization and is considered a 'lone account', set this to true. This will enable CXM on a single account. False by default. | `bool` | `false` | no |
+| enable_benchmarking | Enabled benchmarking to authorize pro-active rightsizing optimization of resources. Disabled by default. | `bool` | `false` | no |
 | deployment_targets | Add a filter, and list of Organizational Units from the Organization to only deploy to. If left blank, all organization will be crawled by default. | `set(any)` | `[]` | no |
 | permission_boundary_arn | Optional - ARN of the policy that is used to set the permissions boundary for the role. | `string` | `null` | no |
 | s3_kms_key_arn | Optional - ARN of the KMS Key that is used to encrypt CUR data | `string` | `null` | no |

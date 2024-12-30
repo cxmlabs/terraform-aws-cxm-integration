@@ -41,6 +41,12 @@ variable "use_lone_account_instead_of_aws_organization" {
   description = "If your AWS account is not using AWS Organization and is considered a 'lone account', set this to true. This will enable CXM on a single account. False by default."
 }
 
+variable "enable_benchmarking" {
+  type        = bool
+  default     = false
+  description = "Enabled benchmarking to authorize pro-active rightsizing optimization of resources. Disabled by default."
+}
+
 ## Optional
 variable "deployment_targets" {
   type        = set(any)
