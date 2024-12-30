@@ -42,7 +42,7 @@ variable "permission_boundary_arn" {
 }
 
 
-variable "cxm_read_only_policy_name" {
+variable "cxm_benchmarking_policy_name" {
   type        = string
   default     = null
   description = "The name of the policy used to enrich ReadOnly to allow Cloud ex Machina to read the Control Plane.  Defaults to cxm-account-ro-$${random_id.uniq.hex} when empty."

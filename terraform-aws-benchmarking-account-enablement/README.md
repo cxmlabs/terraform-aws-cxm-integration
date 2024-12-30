@@ -1,10 +1,10 @@
-
-# CXM AWS Lone Account Enablement
+# CXM AWS Benchmarking Enablement
 
 ## Description
 
-This module enables CXM roles to crawl a AWS lone account (that does not have AWS Organization enabled) in order to list resources.
-It also forbids CXM to access any customer data other than cloud usage & metrics.
+This module enables CXM roles to run benchmarking operations in a given account.
+
+Lambda Benchmarking requires permissions to duplicate existing lambda versions and execute them, as well as retrieving metrics from these operations.
 
 ## Terraform doc
 
@@ -34,11 +34,12 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 
 | Name | Type |
 |------|------|
-| [aws_iam_policy.cxm_read_only_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
-| [aws_iam_role_policy_attachment.cxm_read_only_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_iam_role_policy_attachment.read_only_access_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_policy.cxm_benchmarking_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_role_policy_attachment.cxm_benchmarking_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.lambda_invoke_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.lambda_read_only_access_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [random_id.uniq](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
-| [aws_iam_policy_document.cxm_read_only_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.cxm_benchmarking_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 
 ### Inputs
 
@@ -51,7 +52,7 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 | use_existing_iam_role_policy | Set this to `true` to use an existing policy on the IAM role, rather than attaching a new one. | `bool` | `false` | no |
 | iam_role_arn | IAM role ARN to use. Required when setting use_existing_iam_role to `true`. | `string` | `null` | no |
 | permission_boundary_arn | Optional - ARN of a policy that is used to contraint permissions boundary for the role. | `string` | `null` | no |
-| cxm_read_only_policy_name | The name of the policy used to enrich ReadOnly to allow Cloud ex Machina to read the Control Plane.  Defaults to cxm-account-ro-${random_id.uniq.hex} when empty. | `string` | `null` | no |
+| cxm_benchmarking_policy_name | The name of the policy used to enrich ReadOnly to allow Cloud ex Machina to read the Control Plane.  Defaults to cxm-account-ro-${random_id.uniq.hex} when empty. | `string` | `null` | no |
 | tags | A map/dictionary of Tags to be assigned to created resources. | `map(string)` | `{}` | no |
 
 ### Outputs

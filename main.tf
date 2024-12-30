@@ -49,6 +49,23 @@ module "enable_lone_account" {
   tags                    = local.tags
 }
 
+# BENCHMARKING ACCOUNT
+module "enable_benchmarking_account" {
+  source = "./terraform-aws-benchmarking-account-enablement"
+
+  count = local.enable_benchmarking_account ? 1 : 0
+
+  providers = {
+    aws = aws.benchmarking
+  }
+
+  cxm_aws_account_id      = var.cxm_aws_account_id
+  cxm_external_id         = var.cxm_external_id
+  iam_role_name           = "cxm-benchmark-runner"
+  permission_boundary_arn = var.permission_boundary_arn
+  tags                    = local.tags
+}
+
 # COST USAGE REPORT
 module "enable_cur" {
   source = "./terraform-aws-s3-bucket-read"
