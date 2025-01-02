@@ -58,7 +58,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "ce:DescribeNotificationSubscription",
       "ce:Describe*",
       "ce:Get*",
-      "ce:List*"
+      "ce:List*",
+      "ec2:DescribeRegions"
     ]
     resources = ["*"]
   }
