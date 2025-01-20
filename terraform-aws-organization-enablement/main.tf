@@ -85,6 +85,7 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "sso-directory:Describe*",
       "sso-directory:List*",
       "sso-directory:Get*",
+      "sso:ListInstances",
       "identitystore:Describe*",
       "identitystore:List*",
     ]
