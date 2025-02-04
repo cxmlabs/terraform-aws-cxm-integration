@@ -11,7 +11,7 @@ module "enable_root_organization" {
 
   cxm_aws_account_id      = var.cxm_aws_account_id
   cxm_external_id         = var.cxm_external_id
-  iam_role_name           = "cxm-organization-crawler"
+  iam_role_name           = "cxm-organization-crawler${local.role_suffix}"
   permission_boundary_arn = var.permission_boundary_arn
   tags                    = local.tags
 }
@@ -25,11 +25,12 @@ module "enable_sub_accounts" {
     aws = aws.root
   }
 
-  cxm_aws_account_id = var.cxm_aws_account_id
-  cxm_external_id    = var.cxm_external_id
-  deployment_targets = var.deployment_targets
-  cxm_admin_role_arn = module.enable_root_organization[0].iam_role_arn
-  #tags               = var.tags
+  cxm_aws_account_id    = var.cxm_aws_account_id
+  cxm_external_id       = var.cxm_external_id
+  deployment_targets    = var.deployment_targets
+  cxm_admin_role_arn    = module.enable_root_organization[0].iam_role_arn
+  stack_and_role_suffix = var.role_suffix
+  #tags                 = var.tags
 }
 
 # LONE ACCOUNT ASSET DISCOVERY
@@ -44,7 +45,7 @@ module "enable_lone_account" {
 
   cxm_aws_account_id      = var.cxm_aws_account_id
   cxm_external_id         = var.cxm_external_id
-  iam_role_name           = "cxm-organization-crawler"
+  iam_role_name           = "cxm-organization-crawler${local.role_suffix}"
   permission_boundary_arn = var.permission_boundary_arn
   tags                    = local.tags
 }
@@ -61,7 +62,7 @@ module "enable_benchmarking_account" {
 
   cxm_aws_account_id      = var.cxm_aws_account_id
   cxm_external_id         = var.cxm_external_id
-  iam_role_name           = "cxm-benchmark-runner"
+  iam_role_name           = "cxm-benchmark-runner${local.role_suffix}"
   permission_boundary_arn = var.permission_boundary_arn
   tags                    = local.tags
 }
@@ -77,7 +78,7 @@ module "enable_cur" {
   }
 
   iam_role_external_id  = var.cxm_external_id
-  iam_role_name         = "cxm-cur-reader"
+  iam_role_name         = "cxm-cur-reader${local.role_suffix}"
   cxm_aws_account_id    = var.cxm_aws_account_id
   s3_bucket_name        = var.cost_usage_report_bucket_name
   s3_bucket_kms_key_arn = var.s3_kms_key_arn
@@ -95,7 +96,7 @@ module "enable_cloudtrail" {
   }
 
   iam_role_external_id  = var.cxm_external_id
-  iam_role_name         = "cxm-cloudtrail-reader"
+  iam_role_name         = "cxm-cloudtrail-reader${local.role_suffix}"
   cxm_aws_account_id    = var.cxm_aws_account_id
   s3_bucket_name        = var.cloudtrail_bucket_name
   s3_bucket_kms_key_arn = var.s3_kms_key_arn

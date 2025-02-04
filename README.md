@@ -115,15 +115,14 @@ No providers.
 
 ### Modules
 
-| Name | Source                                                                                       | Version |
-|------|----------------------------------------------------------------------------------------------|---------|
-| enable_root_organization | [./terraform-aws-organization-enablement](./terraform-aws-organization-enablement)           | n/a |
-| enable_sub_accounts | [./terraform-aws-full-organization-enablement](./terraform-aws-full-organization-enablement) | n/a |
-| enable_lone_account | [./terraform-aws-account-enablement](./terraform-aws-account-enablement)                     | n/a |
-| enable_benchmarking_account | [./terraform-aws-benchmarking-account-enablement](./terraform-aws-benchmarking-account-enablement) | n/a |
-| enable_cur | [./terraform-aws-s3-bucket-read](./terraform-aws-s3-bucket-read)                             | n/a |
-| enable_cloudtrail | [./terraform-aws-s3-bucket-read](./terraform-aws-s3-bucket-read)                             | n/a |
-
+| Name | Source | Version |
+|------|--------|---------|
+| enable_root_organization | ./terraform-aws-organization-enablement | n/a |
+| enable_sub_accounts | ./terraform-aws-full-organization-enablement | n/a |
+| enable_lone_account | ./terraform-aws-account-enablement | n/a |
+| enable_benchmarking_account | ./terraform-aws-benchmarking-account-enablement | n/a |
+| enable_cur | ./terraform-aws-s3-bucket-read | n/a |
+| enable_cloudtrail | ./terraform-aws-s3-bucket-read | n/a |
 
 ### Resources
 
@@ -144,6 +143,7 @@ No resources.
 | deployment_targets | Add a filter, and list of Organizational Units from the Organization to only deploy to. If left blank, all organization will be crawled by default. | `set(any)` | `[]` | no |
 | permission_boundary_arn | Optional - ARN of the policy that is used to set the permissions boundary for the role. | `string` | `null` | no |
 | s3_kms_key_arn | Optional - ARN of the KMS Key that is used to encrypt CUR data | `string` | `null` | no |
+| role_suffix | Optional - suffix to append to roles names. | `string` | `null` | no |
 | tags | A map/dictionary of Tags to be assigned to created resources | `map(string)` | `{}` | no |
 
 ### Outputs

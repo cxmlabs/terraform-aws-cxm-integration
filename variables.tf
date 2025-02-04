@@ -66,6 +66,12 @@ variable "s3_kms_key_arn" {
   description = "Optional - ARN of the KMS Key that is used to encrypt CUR data"
 }
 
+variable "role_suffix" {
+  type        = string
+  default     = null
+  description = "Optional - suffix to append to roles names."
+}
+
 variable "tags" {
   type        = map(string)
   description = "A map/dictionary of Tags to be assigned to created resources"

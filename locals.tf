@@ -5,6 +5,7 @@ locals {
   enable_benchmarking_account   = var.enable_benchmarking == true
   enable_cur                    = true
   enable_cloudtrail             = !var.disable_cloudtrail_analysis
+  role_suffix                   = var.role_suffix != null ? "-${var.role_suffix}" : ""
   tags = merge({
     "provider" : "cxm",
   }, var.tags)
