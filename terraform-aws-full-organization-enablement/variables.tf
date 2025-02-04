@@ -26,3 +26,9 @@ variable "prefix" {
   default     = "cxm"
   description = "Prefix to use for all resources created by this module."
 }
+
+variable "stack_and_role_suffix" {
+  type        = string
+  default     = null
+  description = "Suffix to use for the cloudformation stack."
+}

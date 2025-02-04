@@ -42,6 +42,7 @@ No modules.
 | cxm_admin_role_arn | The ARN of the role created in the AWS Organizations root account that will be used as a relay. | `string` | n/a | yes |
 | deployment_targets | A list of Organizational Units from the Organization to deploy to. | `set(any)` | `[]` | no |
 | prefix | Prefix to use for all resources created by this module. | `string` | `"cxm"` | no |
+| stack_and_role_suffix | Suffix to use for the cloudformation stack. | `string` | `null` | no |
 
 ### Outputs
 
