@@ -1,5 +1,9 @@
+locals {
+  stack_and_role_suffix = var.stack_and_role_suffix != null ? "-${var.stack_and_role_suffix}" : ""
+}
+
 resource "aws_cloudformation_stack_set" "cxm_account_enablement" {
-  name = "cxm-account-enablement"
+  name = "cxm-account-enablement${local.stack_and_role_suffix}"
   auto_deployment {
     enabled                          = true
     retain_stacks_on_account_removal = false
@@ -12,6 +16,7 @@ resource "aws_cloudformation_stack_set" "cxm_account_enablement" {
     CXMExternalID     = var.cxm_external_id
     CustomerAccountID = var.cxm_aws_account_id
     AdminRoleArn      = var.cxm_admin_role_arn
+    RoleSuffix        = local.stack_and_role_suffix
   }
 
   template_body = file("${path.module}/cxm-aws-account-enablement.yaml")
