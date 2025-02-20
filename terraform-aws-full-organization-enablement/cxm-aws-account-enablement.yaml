@@ -25,7 +25,7 @@ Resources:
     DependsOn: CloudFormationNotifier
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${Prefix}-asset-crawler'
+      RoleName: !Sub '${Prefix}-asset-crawler${RoleSuffix}'
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
       MaxSessionDuration: 43200
@@ -52,7 +52,7 @@ Resources:
     Type: AWS::IAM::Policy
     DependsOn: IAMCrossAccountExecutionRole
     Properties:
-      PolicyName: !Sub '${Prefix}-asset-crawler-readonly'
+      PolicyName: !Sub '${Prefix}-asset-crawler-readonly${RoleSuffix}'
       Roles:
         - !Ref 'IAMCrossAccountExecutionRole'
       PolicyDocument:
@@ -90,7 +90,7 @@ Resources:
   IAMCrossAccountNotificationRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${Prefix}-feedback-loop-control-plane'
+      RoleName: !Sub '${Prefix}-feedback-loop-control-plane${RoleSuffix}'
       MaxSessionDuration: 43200
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
