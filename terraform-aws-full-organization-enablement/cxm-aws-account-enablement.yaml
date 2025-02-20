@@ -14,6 +14,10 @@ Parameters:
   AdminRoleArn:
     Type: String
     Description: ARN of the role to that will be used to read assets from the account
+  RoleSuffix:
+    Type: String
+    Default: ""
+    Description: Role name suffix
 
 Resources:
   ################################################################
@@ -58,12 +62,6 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
-          # Need to read TFState files to trace back assets to stacks
-          # - Sid: InventoryAndUtilization
-          #   Effect: Allow
-          #   Action:
-          #     - s3:GetObject
-          #   Resource: "arn:aws:s3:::*/*.tfstate"
           # Explicitly denying data plane API Calls
           - Effect: Deny
             Resource: "*"
