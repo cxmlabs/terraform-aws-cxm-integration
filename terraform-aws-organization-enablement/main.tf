@@ -92,32 +92,6 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
     resources = ["*"]
   }
 
-
-  # statement {
-  #   # Need to be able to read TF Files to understand lineage
-  #   sid = "ListBuckets"
-  #   actions = [
-  #     "s3:ListBucket",
-  #     "s3:GetBucketLocation"
-  #   ]
-  #   resources = ["arn:aws:s3:::*"]
-  # }
-
-  # statement {
-  #   # Need to be able to read TF Files to understand lineage
-  #   sid       = "ReadTFStateFiles"
-  #   actions   = ["s3:GetObject"]
-  #   resources = ["arn:aws:s3:::*/*.tfstate"]
-  # }
-
-  # statement {
-  #   # Explicitly removing read access to S3 objects that are not TF State Files
-  #   sid           = "ExplicitDenyOnNonTFStateFiles"
-  #   effect        = "Deny"
-  #   actions       = ["s3:GetObject"]
-  #   not_resources = ["arn:aws:s3:::*/*.tfstate"]
-  # }
-
   statement {
     # Explicitly deny to any action that may allow to access customer data
     sid    = "ExplicitDenyToDataPlane"
@@ -150,9 +124,6 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
     ]
     resources = ["*"]
   }
-
-
-
 }
 
 resource "aws_iam_policy" "cxm_organization_read_only_policy" {

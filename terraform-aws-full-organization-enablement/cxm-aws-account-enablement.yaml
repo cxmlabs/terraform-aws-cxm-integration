@@ -14,10 +14,6 @@ Parameters:
   AdminRoleArn:
     Type: String
     Description: ARN of the role to that will be used to read assets from the account
-  RoleSuffix:
-    Type: String
-    Default: ""
-    Description: Role name suffix
 
 Resources:
   ################################################################
@@ -29,7 +25,7 @@ Resources:
     DependsOn: CloudFormationNotifier
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${Prefix}-asset-crawler${RoleSuffix}'
+      RoleName: !Sub '${Prefix}-asset-crawler'
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
       MaxSessionDuration: 43200
@@ -46,7 +42,6 @@ Resources:
             Condition:
               StringEquals:
                 sts:ExternalId: !Sub 'cxm:${CXMExternalID}'
-                aws:SourceAccount: !Ref 'CustomerAccountID'
           - Effect: Allow
             Action:
               - sts:AssumeRole
@@ -57,7 +52,7 @@ Resources:
     Type: AWS::IAM::Policy
     DependsOn: IAMCrossAccountExecutionRole
     Properties:
-      PolicyName: !Sub '${Prefix}-asset-crawler-readonly${RoleSuffix}'
+      PolicyName: !Sub '${Prefix}-asset-crawler-readonly'
       Roles:
         - !Ref 'IAMCrossAccountExecutionRole'
       PolicyDocument:
@@ -95,7 +90,7 @@ Resources:
   IAMCrossAccountNotificationRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${Prefix}-feedback-loop-control-plane${RoleSuffix}'
+      RoleName: !Sub '${Prefix}-feedback-loop-control-plane'
       MaxSessionDuration: 43200
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
