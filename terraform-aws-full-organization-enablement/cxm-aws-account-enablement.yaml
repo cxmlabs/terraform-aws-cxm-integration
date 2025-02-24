@@ -46,7 +46,6 @@ Resources:
             Condition:
               StringEquals:
                 sts:ExternalId: !Sub 'cxm:${CXMExternalID}'
-                aws:SourceAccount: !Ref 'CustomerAccountID'
           - Effect: Allow
             Action:
               - sts:AssumeRole
@@ -63,12 +62,6 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
-          # Need to read TFState files to trace back assets to stacks
-          # - Sid: InventoryAndUtilization
-          #   Effect: Allow
-          #   Action:
-          #     - s3:GetObject
-          #   Resource: "arn:aws:s3:::*/*.tfstate"
           # Explicitly denying data plane API Calls
           - Effect: Deny
             Resource: "*"
