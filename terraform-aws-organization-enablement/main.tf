@@ -122,7 +122,7 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
     actions = [
       "sts:AssumeRole"
     ]
-    resources = ["arn:aws:iam::aws:role/${prefix}-*"]
+    resources = ["arn:aws:iam::aws:role/${var.prefix}-*"]
   }
 }
 
