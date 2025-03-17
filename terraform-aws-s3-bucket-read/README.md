@@ -55,6 +55,7 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 | use_existing_iam_role_policy | Set this to `true` to use an existing policy on the IAM role, rather than attaching a new one | `bool` | `false` | no |
 | iam_role_arn | The IAM role ARN is required when setting use_existing_iam_role to `true` | `string` | `null` | no |
 | iam_role_external_id | The external ID configured inside the IAM role is required when setting use_existing_iam_role to `true` | `string` | `null` | no |
+| prefix | Prefix to use for most resources created by this module. | `string` | `"cxm"` | no |
 | iam_role_name | The IAM role name. Required to match with iam_role_arn if use_existing_iam_role is set to `true` | `string` | `"cxm-bucket-reader"` | no |
 | permission_boundary_arn | Optional - ARN of the policy that is used to set the permissions boundary for the role. | `string` | `null` | no |
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access | `string` | n/a | yes |

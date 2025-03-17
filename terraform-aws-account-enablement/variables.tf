@@ -12,11 +12,16 @@ variable "cxm_external_id" {
 
 variable "iam_role_name" {
   type        = string
-  description = "Name of the IAM role to set. Required to match with iam_role_arn if use_existing_iam_role is set to `true`."
+  description = "Name of the IAM role to set. Required to match with iam_role_arn if use_existing_iam_role is set to `true`. Will be prefixed with var.prefix."
 }
 
-
 # Optional
+variable "prefix" {
+  type        = string
+  default     = "cxm"
+  description = "Prefix to use to name import constructs such as IAM roles when they are not set otherwise"
+}
+
 variable "use_existing_iam_role" {
   type        = bool
   default     = false

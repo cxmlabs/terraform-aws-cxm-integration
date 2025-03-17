@@ -3,7 +3,7 @@ locals {
 }
 
 resource "aws_cloudformation_stack_set" "cxm_account_enablement" {
-  name = "cxm-account-enablement${local.stack_and_role_suffix}"
+  name = "${var.prefix}-account-enablement${local.stack_and_role_suffix}"
   auto_deployment {
     enabled                          = true
     retain_stacks_on_account_removal = false

@@ -17,6 +17,12 @@ variable "cxm_aws_account_id" {
   description = "The Cloud ex Machina AWS account that the IAM role will grant access."
 }
 
+variable "prefix" {
+  type        = string
+  default     = "cxm"
+  description = "Prefix to use for most resources created by this module."
+}
+
 variable "cxm_role_name" {
   type        = string
   default     = null

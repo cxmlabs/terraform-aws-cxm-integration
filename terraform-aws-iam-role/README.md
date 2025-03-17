@@ -42,6 +42,7 @@ No modules.
 | dry_run | Setting dry_run to `true` will prevent the module from creating new resources. | `bool` | `false` | no |
 | iam_role_name | The IAM role name | `string` | `null` | no |
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access. | `string` | `"596683793973"` | no |
+| prefix | Prefix to use for most resources created by this module. | `string` | `"cxm"` | no |
 | cxm_role_name | Name of the IAM role in the Cloud ex Machina AWS account that will assume this execution role | `string` | `null` | no |
 | external_id | External ID provided by Cloud ex Machina to configure the role. | `string` | `null` | no |
 | permission_boundary_arn | Optional - ARN of the policy that is used to set the permissions boundary for the role. | `string` | `null` | no |

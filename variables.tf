@@ -66,6 +66,12 @@ variable "s3_kms_key_arn" {
   description = "Optional - ARN of the KMS Key that is used to encrypt CUR data"
 }
 
+variable "prefix" {
+  type        = string
+  default     = "cxm"
+  description = "Optional - prefix for key constructs created by this module."
+}
+
 variable "role_suffix" {
   type        = string
   default     = null
