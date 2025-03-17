@@ -48,6 +48,7 @@ Lambda Benchmarking requires permissions to duplicate existing lambda versions a
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access. | `string` | n/a | yes |
 | cxm_external_id | External ID to use in the trust relationship. Required to match the existing External ID when setting use_existing_iam_role to `true`. | `string` | n/a | yes |
 | iam_role_name | Name of the IAM role to set. Required to match with iam_role_arn if use_existing_iam_role is set to `true`. | `string` | n/a | yes |
+| prefix | Prefix to use to name import constructs such as IAM roles when they are not set otherwise | `string` | `"cxm"` | no |
 | use_existing_iam_role | Set to true in order to use a pre-existing IAM role. Set iam_role_arn if you do. | `bool` | `false` | no |
 | use_existing_iam_role_policy | Set this to `true` to use an existing policy on the IAM role, rather than attaching a new one. | `bool` | `false` | no |
 | iam_role_arn | IAM role ARN to use. Required when setting use_existing_iam_role to `true`. | `string` | `null` | no |

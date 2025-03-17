@@ -23,10 +23,16 @@ variable "use_existing_iam_role_policy" {
   description = "Set this to `true` to use an existing policy on the IAM role."
 }
 
+variable "prefix" {
+  type        = string
+  default     = "cxm"
+  description = "Prefix to use to name import constructs such as IAM roles when they are not set otherwise"
+}
+
 variable "iam_role_name" {
   type        = string
-  default     = "cxm-organization-crawler"
-  description = "The IAM role name. Required to match with iam_role_arn if use_existing_iam_role is set to `true`."
+  default     = "organization-crawler"
+  description = "The IAM role name. Required to match with iam_role_arn if use_existing_iam_role is set to `true`. Note tht this name will be prefixed when left empty"
 }
 
 variable "permission_boundary_arn" {

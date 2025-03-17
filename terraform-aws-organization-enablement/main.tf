@@ -1,9 +1,9 @@
 locals {
   iam_role_arn         = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.arn : var.use_existing_iam_role
-  iam_role_name        = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.name : var.iam_role_name
+  iam_role_name        = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.name : "${var.prefix}-${var.iam_role_name}"
   iam_role_external_id = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.external_id : var.cxm_external_id
   cxm_organizations_policy_name = (
-    var.cxm_read_only_policy_name != null ? var.cxm_read_only_policy_name : "cxm-crawler-ro-${random_id.uniq.hex}"
+    var.cxm_read_only_policy_name != null ? var.cxm_read_only_policy_name : "${var.prefix}-crawler-ro-${random_id.uniq.hex}"
   )
 }
 
@@ -22,7 +22,7 @@ module "cxm_cfg_iam_role" {
   depends_on              = [aws_cloudwatch_event_rule.cxm_organization_access_event_rule]
   source                  = "../terraform-aws-iam-role"
   dry_run                 = var.use_existing_iam_role != null ? true : false
-  iam_role_name           = var.iam_role_name
+  iam_role_name           = "${var.prefix}-${var.iam_role_name}"
   external_id             = var.use_existing_iam_role != null ? "" : var.cxm_external_id
   permission_boundary_arn = var.permission_boundary_arn
   cxm_aws_account_id      = var.cxm_aws_account_id
@@ -122,7 +122,7 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
     actions = [
       "sts:AssumeRole"
     ]
-    resources = ["*"]
+    resources = ["arn:aws:iam::aws:role/${prefix}-*"]
   }
 }
 
@@ -142,7 +142,7 @@ resource "aws_iam_role_policy_attachment" "cxm_organization_read_only_policy_att
 }
 
 resource "aws_iam_role" "cxm_feedback_loop_iam_role" {
-  name               = "cxm-feedback-loop-control-plane-${random_id.uniq.hex}"
+  name               = "${var.prefix}-feedback-loop-control-plane-${random_id.uniq.hex}"
   assume_role_policy = data.aws_iam_policy_document.cxm_assume_role_policy.json
   tags               = var.tags
 }
@@ -177,7 +177,7 @@ data "aws_iam_policy_document" "cxm_cross_account_eventbridge_put_events" {
 }
 
 resource "aws_iam_policy" "cxm_cross_account_eventbridge_policy" {
-  name        = "cxm-cross-account-eventbridge-policy-${random_id.uniq.hex}"
+  name        = "${var.prefix}-cross-account-eventbridge-policy-${random_id.uniq.hex}"
   description = "Policy allowing EventBridge to send events cross-accounts/region"
   policy      = data.aws_iam_policy_document.cxm_cross_account_eventbridge_put_events.json
   tags        = var.tags
@@ -194,7 +194,7 @@ resource "aws_iam_role_policy_attachment" "cxm_cross_account_eventbridge_policy_
 #
 ################################################################
 resource "aws_cloudwatch_event_rule" "cxm_organization_changes_event_rule" {
-  name        = "cxm-organization-changes-${random_id.uniq.hex}"
+  name        = "${var.prefix}-organization-changes-${random_id.uniq.hex}"
   description = "Notifies when changes happen to to the organization such as adding an account"
 
   event_pattern = jsonencode({
@@ -221,7 +221,7 @@ resource "aws_cloudwatch_event_target" "cxm_organization_changes_event_target" {
 #
 ################################################################
 resource "aws_cloudwatch_event_rule" "cxm_organization_access_event_rule" {
-  name        = "cxm-organization-access-${random_id.uniq.hex}"
+  name        = "${var.prefix}-organization-access-${random_id.uniq.hex}"
   description = "Notifies when the IAM Role used to access the Organization is deployed"
 
   event_pattern = jsonencode({
@@ -233,7 +233,7 @@ resource "aws_cloudwatch_event_rule" "cxm_organization_access_event_rule" {
       managementEvent = [true]
       requestParameters = {
         roleName = [
-          { wildcard = "*cxm*" }
+          { wildcard = "*${var.prefix}*" }
         ]
       }
     }
@@ -254,12 +254,12 @@ resource "aws_cloudwatch_event_target" "cxm_organization_access_event_target" {
 #
 ################################################################
 resource "aws_cloudwatch_event_rule" "cxm_organization_cloudformation_rule" {
-  name        = "cxm-organization-cloudformation-${random_id.uniq.hex}"
+  name        = "${var.prefix}-organization-cloudformation-${random_id.uniq.hex}"
   description = "Notifies when the StackSet used to deploy an account is updated"
 
   event_pattern = jsonencode({
     resources = [
-      { wildcard = "*cxm*" }
+      { wildcard = "*${var.prefix}*" }
     ]
     detail-type = [
       "CloudFormation StackSet StackInstance Status Change",

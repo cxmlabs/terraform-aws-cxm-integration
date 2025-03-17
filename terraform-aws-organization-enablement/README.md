@@ -60,7 +60,8 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 | cxm_external_id | External ID to use in the trust relationship. Provided by CXM. | `string` | n/a | yes |
 | use_existing_iam_role | Set this to some IAM role arn to force usage of an existing IAM role (default null) | `string` | `null` | no |
 | use_existing_iam_role_policy | Set this to `true` to use an existing policy on the IAM role. | `bool` | `false` | no |
-| iam_role_name | The IAM role name. Required to match with iam_role_arn if use_existing_iam_role is set to `true`. | `string` | `"cxm-organization-crawler"` | no |
+| prefix | Prefix to use to name import constructs such as IAM roles when they are not set otherwise | `string` | `"cxm"` | no |
+| iam_role_name | The IAM role name. Required to match with iam_role_arn if use_existing_iam_role is set to `true`. Note tht this name will be prefixed when left empty | `string` | `"organization-crawler"` | no |
 | permission_boundary_arn | Optional - ARN of the policy that is used to set the permissions boundary for the role. | `string` | `null` | no |
 | cxm_read_only_policy_name | The name of the policy used to authorize Cloud ex Machina to read the AWS Organizations API.  Defaults to cxm-organizations-ro-${random_id.uniq.hex} when empty. | `string` | `null` | no |
 | tags | A map of K:V pairs to use as tags on all resources. | `map(string)` | `{}` | no |

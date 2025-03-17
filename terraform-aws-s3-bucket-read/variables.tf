@@ -23,6 +23,12 @@ variable "iam_role_external_id" {
   description = "The external ID configured inside the IAM role is required when setting use_existing_iam_role to `true`"
 }
 
+variable "prefix" {
+  type        = string
+  default     = "cxm"
+  description = "Prefix to use for most resources created by this module."
+}
+
 variable "iam_role_name" {
   type        = string
   default     = "cxm-bucket-reader"

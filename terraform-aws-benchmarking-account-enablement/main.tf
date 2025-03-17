@@ -1,9 +1,9 @@
 locals {
   iam_role_arn         = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.arn : var.iam_role_arn
-  iam_role_name        = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.name : var.iam_role_name
+  iam_role_name        = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.name : "${var.prefix}-${var.iam_role_name}"
   iam_role_external_id = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.external_id : var.cxm_external_id
   cxm_benchmarking_policy_name = (
-    var.cxm_benchmarking_policy_name != null ? var.cxm_benchmarking_policy_name : "cxm-benchmarking-${random_id.uniq.hex}"
+    var.cxm_benchmarking_policy_name != null ? var.cxm_benchmarking_policy_name : "${var.prefix}-benchmarking-${random_id.uniq.hex}"
   )
 }
 
@@ -14,7 +14,7 @@ resource "random_id" "uniq" {
 module "cxm_cfg_iam_role" {
   source                  = "../terraform-aws-iam-role"
   dry_run                 = var.use_existing_iam_role ? true : false
-  iam_role_name           = var.iam_role_name
+  iam_role_name           = "${var.prefix}-${var.iam_role_name}"
   permission_boundary_arn = var.permission_boundary_arn
   cxm_aws_account_id      = var.cxm_aws_account_id
   external_id             = var.use_existing_iam_role ? "" : var.cxm_external_id

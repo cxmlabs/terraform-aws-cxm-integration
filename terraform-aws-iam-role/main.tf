@@ -1,6 +1,6 @@
 locals {
-  iam_role_name = var.iam_role_name != null ? var.iam_role_name : "cxm-iam-role-${random_id.uniq.hex}"
-  external_id   = var.external_id != null ? "cxm:${var.external_id}" : "cxm:${random_id.uniq.hex}"
+  iam_role_name = var.iam_role_name != null ? var.iam_role_name : "${var.prefix}-iam-role-${random_id.uniq.hex}"
+  external_id   = var.external_id != null ? var.external_id : "cxm:${random_id.uniq.hex}"
   principal     = var.cxm_role_name != null ? "arn:aws:iam::${var.cxm_aws_account_id}:role/${var.cxm_role_name}" : "arn:aws:iam::${var.cxm_aws_account_id}:root"
 }
 

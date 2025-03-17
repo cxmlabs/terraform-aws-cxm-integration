@@ -1,9 +1,9 @@
 locals {
   iam_role_arn         = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.arn : var.iam_role_arn
-  iam_role_name        = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.name : var.iam_role_name
+  iam_role_name        = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.name : "${var.prefix}-${var.iam_role_name}"
   iam_role_external_id = module.cxm_cfg_iam_role.created ? module.cxm_cfg_iam_role.external_id : var.iam_role_external_id
   cxm_s3_read_policy_name = (
-    var.cxm_s3_read_policy_name != null ? var.cxm_s3_read_policy_name : "cxm-s3-ro-policy-${random_id.uniq.hex}"
+    var.cxm_s3_read_policy_name != null ? var.cxm_s3_read_policy_name : "${var.prefix}-s3-ro-policy-${random_id.uniq.hex}"
   )
 }
 
@@ -16,7 +16,7 @@ resource "random_id" "uniq" {
 module "cxm_cfg_iam_role" {
   source                  = "../terraform-aws-iam-role"
   dry_run                 = var.use_existing_iam_role ? true : false
-  iam_role_name           = var.iam_role_name
+  iam_role_name           = "${var.prefix}-${var.iam_role_name}"
   external_id             = var.use_existing_iam_role ? "" : var.iam_role_external_id
   permission_boundary_arn = var.permission_boundary_arn
   cxm_aws_account_id      = var.cxm_aws_account_id
@@ -71,7 +71,7 @@ resource "aws_iam_role_policy_attachment" "cxm_s3_ro_policy_attachment" {
 
 #TODO: Refactor this to have a configurable notification system
 resource "aws_iam_role" "cxm_feedback_loop_iam_role" {
-  name               = "cxm-feedback-loop-data-plane-${random_id.uniq.hex}"
+  name               = "${var.prefix}-feedback-loop-data-plane-${random_id.uniq.hex}"
   assume_role_policy = data.aws_iam_policy_document.cxm_assume_role_policy.json
   tags               = var.tags
 }
@@ -101,7 +101,7 @@ data "aws_iam_policy_document" "cxm_cross_account_eventbridge_put_events" {
 }
 
 resource "aws_iam_policy" "cxm_cross_account_eventbridge_policy" {
-  name        = "cxm-cross-account-eventbridge-policy-${random_id.uniq.hex}"
+  name        = "${var.prefix}-cross-account-eventbridge-policy-${random_id.uniq.hex}"
   description = "Policy allowing EventBridge to send events cross-accounts/region"
   policy      = data.aws_iam_policy_document.cxm_cross_account_eventbridge_put_events.json
   tags        = var.tags
@@ -113,7 +113,7 @@ resource "aws_iam_role_policy_attachment" "cxm_cross_account_eventbridge_policy_
 }
 
 resource "aws_cloudwatch_event_rule" "cxm_bucket_event_rule" {
-  name        = "cxm-s3-bucket-change-notifier-${random_id.uniq.hex}"
+  name        = "${var.prefix}-s3-bucket-change-notifier-${random_id.uniq.hex}"
   description = "Notifies when changes happen to files in the S3 bucket"
 
   event_pattern = jsonencode({

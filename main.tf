@@ -9,9 +9,11 @@ module "enable_root_organization" {
     aws = aws.root
   }
 
-  cxm_aws_account_id      = var.cxm_aws_account_id
-  cxm_external_id         = var.cxm_external_id
-  iam_role_name           = "cxm-organization-crawler${local.role_suffix}"
+  cxm_aws_account_id = var.cxm_aws_account_id
+  cxm_external_id    = var.cxm_external_id
+  prefix             = local.prefix
+  # This role name will be prefixed by local.prefix when deployed
+  iam_role_name           = "organization-crawler${local.role_suffix}"
   permission_boundary_arn = var.permission_boundary_arn
   tags                    = local.tags
 }
@@ -25,6 +27,7 @@ module "enable_sub_accounts" {
     aws = aws.root
   }
 
+  prefix                = local.prefix
   cxm_aws_account_id    = var.cxm_aws_account_id
   cxm_external_id       = var.cxm_external_id
   deployment_targets    = var.deployment_targets
@@ -43,9 +46,11 @@ module "enable_lone_account" {
     aws = aws.root
   }
 
-  cxm_aws_account_id      = var.cxm_aws_account_id
-  cxm_external_id         = var.cxm_external_id
-  iam_role_name           = "cxm-organization-crawler${local.role_suffix}"
+  cxm_aws_account_id = var.cxm_aws_account_id
+  cxm_external_id    = var.cxm_external_id
+  prefix             = local.prefix
+  # This role name will be prefixed by local.prefix when deployed
+  iam_role_name           = "organization-crawler${local.role_suffix}"
   permission_boundary_arn = var.permission_boundary_arn
   tags                    = local.tags
 }
@@ -60,9 +65,11 @@ module "enable_benchmarking_account" {
     aws = aws.benchmarking
   }
 
-  cxm_aws_account_id      = var.cxm_aws_account_id
-  cxm_external_id         = var.cxm_external_id
-  iam_role_name           = "cxm-benchmark-runner${local.role_suffix}"
+  cxm_aws_account_id = var.cxm_aws_account_id
+  cxm_external_id    = var.cxm_external_id
+  prefix             = local.prefix
+  # This role name will be prefixed by local.prefix when deployed
+  iam_role_name           = "benchmark-runner${local.role_suffix}"
   permission_boundary_arn = var.permission_boundary_arn
   tags                    = local.tags
 }
@@ -77,8 +84,10 @@ module "enable_cur" {
     aws = aws.cur
   }
 
-  iam_role_external_id  = var.cxm_external_id
-  iam_role_name         = "cxm-cur-reader${local.role_suffix}"
+  iam_role_external_id = var.cxm_external_id
+  prefix               = local.prefix
+  # This role name will be prefixed by local.prefix when deployed
+  iam_role_name         = "cur-reader${local.role_suffix}"
   cxm_aws_account_id    = var.cxm_aws_account_id
   s3_bucket_name        = var.cost_usage_report_bucket_name
   s3_bucket_kms_key_arn = var.s3_kms_key_arn
@@ -95,8 +104,10 @@ module "enable_cloudtrail" {
     aws = aws.cloudtrail
   }
 
-  iam_role_external_id  = var.cxm_external_id
-  iam_role_name         = "cxm-cloudtrail-reader${local.role_suffix}"
+  iam_role_external_id = var.cxm_external_id
+  prefix               = local.prefix
+  # This role name will be prefixed by local.prefix when deployed
+  iam_role_name         = "cloudtrail-reader${local.role_suffix}"
   cxm_aws_account_id    = var.cxm_aws_account_id
   s3_bucket_name        = var.cloudtrail_bucket_name
   s3_bucket_kms_key_arn = var.s3_kms_key_arn
