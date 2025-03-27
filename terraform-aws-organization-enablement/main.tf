@@ -68,11 +68,45 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
     # Understand configuration and enrollment of accounts into financial optimizations
     sid = "CostOptimizationHubReadOnlyAccess"
     actions = [
-      "cost-optimization-hub:ListEnrollmentStatuses",
-      "cost-optimization-hub:GetPreferences",
-      "cost-optimization-hub:GetRecommendation",
-      "cost-optimization-hub:ListRecommendations",
-      "cost-optimization-hub:ListRecommendationSummaries"
+      "cost-optimization-hub:List*",
+      "cost-optimization-hub:Get*"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    # Understand configuration and enrollment of accounts into financial optimizations
+    sid = "CommitmentManagementPermissions"
+    actions = [
+      # DynamoDB Reservations
+      "dynamodb:DescribeReservedCapacity",
+      "dynamodb:DescribeReservedCapacityOfferings",
+      # EC2 Reservations
+      "ec2:DescribeReserved*",
+      "ec2:DescribeAvailabilityZones",
+      "ec2:DescribeRegions",
+      "ec2:DescribeInstances",
+      "ec2:DescribeInstanceTypes",
+      "ec2:DescribeTags",
+      "ec2:GetReserved*",
+      # RDS Reservations
+      "rds:DescribeReserved*",
+      "rds:ListTagsForResource*",
+      # Redshift Reservations
+      "redshift:DescribeReserved*",
+      "redshift:DescribeTags",
+      "redshift:GetReserved*",
+      # ElastiCache Reservations
+      "elasticache:DescribeReserved*",
+      "elasticache:ListTagsForResource",
+      # ElasticSearch Reservations
+      "es:DescribeReserved*",
+      "es:ListTags",
+      # ElasticSearch Reservations
+      "es:DescribeReserved*",
+      "es:ListTags",
+      # Saving Plans
+      "savingplans:*"
     ]
     resources = ["*"]
   }
