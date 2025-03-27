@@ -33,6 +33,43 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
   version = "2012-10-17"
 
   statement {
+    # Understand configuration and enrollment of accounts into financial optimizations
+    sid = "CommitmentManagementPermissions"
+    actions = [
+      # DynamoDB Reservations
+      "dynamodb:DescribeReservedCapacity",
+      "dynamodb:DescribeReservedCapacityOfferings",
+      # EC2 Reservations
+      "ec2:DescribeReserved*",
+      "ec2:DescribeAvailabilityZones",
+      "ec2:DescribeRegions",
+      "ec2:DescribeInstances",
+      "ec2:DescribeInstanceTypes",
+      "ec2:DescribeTags",
+      "ec2:GetReserved*",
+      # RDS Reservations
+      "rds:DescribeReserved*",
+      "rds:ListTagsForResource*",
+      # Redshift Reservations
+      "redshift:DescribeReserved*",
+      "redshift:DescribeTags",
+      "redshift:GetReserved*",
+      # ElastiCache Reservations
+      "elasticache:DescribeReserved*",
+      "elasticache:ListTagsForResource",
+      # ElasticSearch Reservations
+      "es:DescribeReserved*",
+      "es:ListTags",
+      # ElasticSearch Reservations
+      "es:DescribeReserved*",
+      "es:ListTags",
+      # Saving Plans
+      "savingplans:*"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
     # Explicitly removing read access to S3 objects
     sid           = "ExplicitDenyOnS3Files"
     effect        = "Deny"
