@@ -64,7 +64,8 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
       "es:DescribeReserved*",
       "es:ListTags",
       # Saving Plans
-      "savingplans:*"
+      "savingplans:Describe*",
+      "savingplans:List*"
     ]
     resources = ["*"]
   }
