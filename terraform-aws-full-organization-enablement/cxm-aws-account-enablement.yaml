@@ -176,16 +176,16 @@ Resources:
         detail:
           status-details:
             status: [
-              "CREATE_COMPLETE
-              - CREATE_FAILED
-              - DELETE_COMPLETE
-              - DELETE_FAILED
-              - ROLLBACK_COMPLETE
-              - ROLLBACK_FAILED
-              - UPDATE_COMPLETE
-              - UPDATE_FAILED
-              - UPDATE_ROLLBACK_COMPLETE
-              - UPDATE_ROLLBACK_FAILED"
+              "CREATE_COMPLETE",
+              "CREATE_FAILED",
+              "DELETE_COMPLETE",
+              "DELETE_FAILED",
+              "ROLLBACK_COMPLETE",
+              "ROLLBACK_FAILED",
+              "UPDATE_COMPLETE",
+              "UPDATE_FAILED",
+              "UPDATE_ROLLBACK_COMPLETE",
+              "UPDATE_ROLLBACK_FAILED"
             ]
       State: "ENABLED"
       Targets:
