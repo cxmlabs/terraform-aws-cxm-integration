@@ -36,6 +36,29 @@ resource "aws_iam_role_policy_attachment" "organization_read_only_access_policy_
   depends_on = [module.cxm_cfg_iam_role]
 }
 
+resource "aws_iam_role_policy_attachment" "crawler_read_only_access_policy_attachment" {
+  count      = var.use_existing_iam_role_policy ? 0 : 1
+  role       = local.iam_role_name
+  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
+  depends_on = [module.cxm_cfg_iam_role]
+}
+
+# This is required in order to increase RI/Savings Plans quotas if need be
+resource "aws_iam_role_policy_attachment" "crawler_manage_ri_quotas_policy_attachment" {
+  count      = var.use_existing_iam_role_policy ? 0 : 1
+  role       = local.iam_role_name
+  policy_arn = "arn:aws:iam::aws:policy/ServiceQuotasFullAccess"
+  depends_on = [module.cxm_cfg_iam_role]
+}
+
+# This is required in fully manage Savings Plans
+resource "aws_iam_role_policy_attachment" "crawler_manage_sp_policy_attachment" {
+  count      = var.use_existing_iam_role_policy ? 0 : 1
+  role       = local.iam_role_name
+  policy_arn = "arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess"
+  depends_on = [module.cxm_cfg_iam_role]
+}
+
 ################################################################
 #
 # Required to also crawl the AWS Organization Assets
@@ -47,9 +70,11 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
 
   statement {
     # Describing CUR Data Exports / Reports to decide on which one to use
-    sid = "DescribeReportDefinitions"
+    sid = "ManageReportDefinitions"
     actions = [
       "cur:DescribeReportDefinitions",
+      "cur:ModifyReportDefinition",
+      "cur:PutReportDefinition",
       "cur:ListTagsForResource",
       "bcm-data-exports:List*",
       "bcm-data-exports:Get*",
@@ -59,7 +84,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "ce:Describe*",
       "ce:Get*",
       "ce:List*",
-      "ec2:DescribeRegions"
+      "ec2:DescribeRegions",
+      "ec2:DescribeAccountAttributes",
     ]
     resources = ["*"]
   }
@@ -81,6 +107,7 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       # DynamoDB Reservations
       "dynamodb:DescribeReservedCapacity",
       "dynamodb:DescribeReservedCapacityOfferings",
+      "dynamodb:PurchaseReservedCapacityOfferings",
       # EC2 Reservations
       "ec2:DescribeReserved*",
       "ec2:DescribeAvailabilityZones",
@@ -89,25 +116,37 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeTags",
       "ec2:GetReserved*",
+      "ec2:ModifyReservedInstances",
+      "ec2:PurchaseReservedInstancesOffering",
+      "ec2:CreateReservedInstancesListing",
+      "ec2:CancelReservedInstancesListing",
+      "ec2:GetReservedInstancesExchangeQuote",
+      "ec2:AcceptReservedInstancesExchangeQuote",
       # RDS Reservations
       "rds:DescribeReserved*",
       "rds:ListTagsForResource*",
+      "rds:PurchaseReservedDBInstancesOffering",
       # Redshift Reservations
       "redshift:DescribeReserved*",
       "redshift:DescribeTags",
       "redshift:GetReserved*",
+      "redshift:AcceptReservedNodeExchange",
+      "redshift:PurchaseReservedNodeOffering",
       # ElastiCache Reservations
       "elasticache:DescribeReserved*",
       "elasticache:ListTagsForResource",
+      "elasticache:PurchaseReservedCacheNodesOffering",
       # ElasticSearch Reservations
       "es:DescribeReserved*",
       "es:ListTags",
-      # ElasticSearch Reservations
-      "es:DescribeReserved*",
-      "es:ListTags",
-      # Saving Plans
-      "savingsplans:Describe*",
-      "savingsplans:List*"
+      "es:PurchaseReservedElasticsearchInstanceOffering",
+      "es:PurchaseReservedInstanceOffering",
+      # memoryDB
+      "memorydb:DescribeReserved*",
+      "memorydb:ListTags",
+      "memorydb:PurchaseReservedNodesOffering",
+      # Saving Plans full management
+      "savingsplans:*"
     ]
     resources = ["*"]
   }
@@ -120,7 +159,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "sso-directory:Describe*",
       "sso-directory:List*",
       "sso-directory:Get*",
-      "sso:ListInstances",
+      "sso:List*",
+      "sso:Get*",
       "identitystore:Describe*",
       "identitystore:List*",
     ]
@@ -132,6 +172,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
     sid    = "ExplicitDenyToDataPlane"
     effect = "Deny"
     actions = [
+      "athena:StartCalculationExecution",
+      "athena:StartQueryExecution",
       "dynamodb:GetItem",
       "dynamodb:BatchGetItem",
       "dynamodb:Query",
@@ -141,11 +183,13 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "ecr:BatchGetImage",
       "ecr:GetAuthorizationToken",
       "ecr:GetDownloadUrlForLayer",
-      "kinesis:Get*",
+      "kinesis:GetRecords",
+      "kinesis:GetShardIterator",
       "lambda:GetFunction",
       "logs:GetLogEvents",
       "sdb:Select*",
-      "sqs:ReceiveMessage"
+      "sqs:ReceiveMessage",
+      "rds-data:*"
     ]
     resources = ["*"]
   }
