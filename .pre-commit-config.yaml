@@ -14,8 +14,10 @@ repos:
         args:
           - --args=-recursive
       - id: terraform_tflint
+        exclude: ^.*examples/.*$
       #- id: terraform_tfsec
       - id: terraform_docs
+        exclude: ^.*examples/.*$
         args:
           - "--hook-config=--path-to-file=./README.md"
           - "--args=--indent=3 --anchor=false --escape=false --sort=false --html=false"
