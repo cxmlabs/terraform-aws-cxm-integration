@@ -1,0 +1,3 @@
+# Ignore example directories - they are for demonstration purposes
+examples/
+examples/**
