@@ -6,6 +6,10 @@ aws_region         = "us-west-2"
 cxm_aws_account_id = "123456789012"  # Replace with actual CXM account ID
 cxm_external_id    = "your-unique-external-id-here"
 
+# S3 Buckets
+cost_usage_report_bucket_name = "my-organization-cur-bucket"
+cloudtrail_bucket_name        = "my-organization-cloudtrail-bucket"
+
 # Account IDs
 production_account_id = "111111111111"
 staging_account_id    = "222222222222"

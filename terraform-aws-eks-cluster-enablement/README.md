@@ -21,29 +21,25 @@ This Terraform module enables Cloud ex Machina (CXM) access to AWS EKS clusters 
 
 ## Usage
 
-### Basic Usage with Account Enablement Module
+### Basic Usage with CXM Integration Module
 
 ```hcl
-# First, enable CXM on the account
-module "cxm_account_enablement" {
-  source = "./terraform-aws-account-enablement"
+# First, enable CXM on the account/organization
+module "cxm_integration" {
+  source  = "cxmlabs/cxm-integration/aws"
+  version = "0.1.0"
 
   cxm_aws_account_id = "123456789012"
   cxm_external_id    = "your-external-id"
-  iam_role_name      = "asset-crawler"
 
-  tags = {
-    Environment = "production"
-    Team        = "platform"
-  }
 }
 
 # Then, enable CXM access to EKS cluster
 module "cxm_eks_enablement" {
   source = "./terraform-aws-eks-cluster-enablement"
 
-  cluster_name   = "my-production-cluster"
-  iam_role_arn   = module.cxm_account_enablement.iam_role_arn
+  cluster_name = "my-production-cluster"
+  iam_role_arn = module.cxm_integration.cxm_iam_role_arn
 
   # Module automatically detects and uses appropriate access method
 
@@ -123,6 +119,7 @@ To upgrade a legacy cluster to use access entries:
 1. Run the AWS CLI command: `aws eks update-cluster-config --name CLUSTER_NAME --access-config authenticationMode=API_AND_CONFIG_MAP`
 2. Re-run Terraform - the module will automatically detect the new capability and switch to access entries
 
+<!-- BEGIN_TF_DOCS -->
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -162,6 +159,7 @@ To upgrade a legacy cluster to use access entries:
 |------|---------|
 | aws | >= 5.0 |
 | kubernetes | >= 2.20 |
+<!-- END_TF_DOCS -->
 
 ## Permissions
 

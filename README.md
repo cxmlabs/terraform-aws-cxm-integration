@@ -68,6 +68,22 @@ module "cxm-integration" {
 }
 ```
 
+### EKS Cluster Enablement
+
+For enabling CXM access to existing EKS clusters, use the dedicated EKS cluster enablement module:
+
+```hcl
+module "cxm_eks_enablement" {
+  source = "./terraform-aws-eks-cluster-enablement"
+
+  cluster_name = "my-production-cluster"
+  # Use the IAM role from the CXM integration module
+  iam_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${module.cxm-integration.iam_role_name}"  # Construct ARN from account ID and role name
+}
+```
+
+This module automatically detects whether your EKS cluster supports modern access entries or requires the legacy aws-auth ConfigMap approach. The `cxm_iam_role_arn` output automatically selects the appropriate IAM role based on your deployment type (lone account vs organization). For detailed usage instructions, examples, and configuration options, see the [EKS cluster enablement module documentation](./terraform-aws-eks-cluster-enablement/README.md).
+
 ### About providers
 
 Providers should be setup based on where you store your CUR bucket and your cloudtrail logs bucket.
@@ -149,5 +165,10 @@ No resources.
 
 ### Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| lone_account_iam_role_arn | ARN of the CXM IAM role for lone account deployment |
+| organization_iam_role_arn | ARN of the CXM IAM role for organization root deployment |
+| benchmarking_iam_role_arn | ARN of the CXM IAM role for benchmarking account |
+| cxm_iam_role_name | Name of the CXM IAM role (automatically selects between lone account or organization deployment) |
 <!-- END_TF_DOCS -->
