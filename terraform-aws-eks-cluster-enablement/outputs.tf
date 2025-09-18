@@ -8,9 +8,9 @@ output "cluster_endpoint" {
   description = "Endpoint URL of the EKS cluster"
 }
 
-output "cluster_version" {
-  value       = data.aws_eks_cluster.cluster.version
-  description = "Kubernetes version of the EKS cluster"
+output "cluster_account_id" {
+  value       = data.aws_eks_cluster.cluster.arn != null ? split(":", data.aws_eks_cluster.cluster.arn)[4] : null
+  description = "AWS Account ID where the EKS cluster is located"
 }
 
 output "cluster_supports_access_entries" {
