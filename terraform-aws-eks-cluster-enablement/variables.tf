@@ -22,12 +22,6 @@ variable "kubernetes_groups" {
   description = "List of Kubernetes groups to assign to the IAM role. Only used for aws-auth ConfigMap method."
 }
 
-variable "user_name" {
-  type        = string
-  default     = null
-  description = "Username to use in Kubernetes for the IAM role. Defaults to the IAM role name if not specified."
-}
-
 variable "access_scope_type" {
   type        = string
   default     = "cluster"

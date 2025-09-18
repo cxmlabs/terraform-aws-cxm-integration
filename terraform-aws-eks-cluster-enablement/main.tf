@@ -42,7 +42,7 @@ resource "aws_eks_access_entry" "cxm_access_entry" {
   principal_arn     = data.aws_iam_role.cxm_role.arn
   kubernetes_groups = var.kubernetes_groups
   type              = "STANDARD"
-  user_name         = var.user_name != null ? var.user_name : data.aws_iam_role.cxm_role.name
+  user_name         = data.aws_iam_role.cxm_role.name
 
   tags = var.tags
 
@@ -78,7 +78,7 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
       try(yamldecode(data.kubernetes_config_map_v1.aws_auth[0].data["mapRoles"]), []),
       [{
         rolearn  = data.aws_iam_role.cxm_role.arn
-        username = var.user_name != null ? var.user_name : data.aws_iam_role.cxm_role.name
+        username = data.aws_iam_role.cxm_role.name
         groups   = var.kubernetes_groups
       }]
     ))

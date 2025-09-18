@@ -94,7 +94,6 @@ variable "production_cluster_config" {
   type = map(object({
     access_scope_type       = optional(string, "cluster")
     access_scope_namespaces = optional(list(string), [])
-    user_name               = optional(string, null)
     enable_access_entries   = optional(bool, true)
   }))
   description = "Per-cluster configuration for production clusters"
@@ -105,7 +104,6 @@ variable "staging_cluster_config" {
   type = map(object({
     access_scope_type       = optional(string, "namespace")
     access_scope_namespaces = optional(list(string), ["kube-system", "monitoring"])
-    user_name               = optional(string, "cxm-staging-crawler")
     enable_access_entries   = optional(bool, true)
   }))
   description = "Per-cluster configuration for staging clusters"
