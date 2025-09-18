@@ -144,7 +144,7 @@ To upgrade a legacy cluster to use access entries:
 |------|-------------|
 | cluster_name | Name of the EKS cluster that was configured |
 | cluster_endpoint | Endpoint URL of the EKS cluster |
-| cluster_version | Kubernetes version of the EKS cluster |
+| cluster_account_id | ID of the AWS Account where the cluster is |
 | cluster_supports_access_entries | Whether the cluster natively supports access entries |
 | access_entry_created | Whether an access entry was created for the CXM role |
 | policy_association_created | Whether a policy association was created for the CXM role |
