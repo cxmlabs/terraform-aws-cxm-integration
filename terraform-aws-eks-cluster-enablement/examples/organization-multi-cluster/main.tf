@@ -52,6 +52,19 @@ provider "aws" {
   }
 }
 
+# Data sources for account information
+data "aws_caller_identity" "management" {
+  provider = aws.management
+}
+
+data "aws_caller_identity" "production" {
+  provider = aws.production
+}
+
+data "aws_caller_identity" "staging" {
+  provider = aws.staging
+}
+
 # Data sources for EKS clusters in production account
 data "aws_eks_cluster" "production_clusters" {
   provider = aws.production
@@ -97,22 +110,26 @@ provider "kubernetes" {
 # Organization-wide CXM Enablement
 #################################################################
 
-# Enable CXM across the entire AWS Organization
-# This deploys IAM roles to all accounts via StackSets
-module "cxm_organization_enablement" {
-  source = "../../terraform-aws-organization-enablement"
+# Enable CXM across the entire AWS Organization using the main integration module
+module "cxm_integration" {
+  source = "../../" # Main CXM integration module
 
   providers = {
-    aws = aws.management
+    aws.root       = aws.management
+    aws.cur        = aws.management # Adjust as needed for your CUR bucket location
+    aws.cloudtrail = aws.management # Adjust as needed for your CloudTrail bucket location
   }
 
   cxm_aws_account_id = var.cxm_aws_account_id
   cxm_external_id    = var.cxm_external_id
-  iam_role_name      = "asset-crawler"
 
-  # Configure StackSet deployment
-  organizational_unit_ids = var.organizational_unit_ids
-  deployment_regions      = var.deployment_regions
+  # Required for organization deployment
+  cost_usage_report_bucket_name = var.cost_usage_report_bucket_name
+  cloudtrail_bucket_name        = var.cloudtrail_bucket_name
+
+  # Organization-specific configuration
+  deployment_targets                           = var.deployment_targets
+  use_lone_account_instead_of_aws_organization = false
 
   tags = merge(var.tags, {
     Purpose = "organization-wide-cxm-enablement"
@@ -135,9 +152,8 @@ module "cxm_production_eks_enablement" {
   for_each = toset(var.production_cluster_names)
 
   cluster_name = each.value
-  # Use the organization module's output to get the IAM role ARN
-  # The role name follows the pattern: ${prefix}-${iam_role_name}
-  iam_role_arn = "arn:aws:iam::${var.production_account_id}:role/${var.prefix}-asset-crawler"
+  # Construct IAM role ARN from account ID and role name
+  iam_role_arn = "arn:aws:iam::${data.aws_caller_identity.production.account_id}:role/${module.cxm_integration.cxm_iam_role_name}"
 
   # Production clusters get cluster-wide view access
   access_scope_type = "cluster"
@@ -149,8 +165,6 @@ module "cxm_production_eks_enablement" {
     Account     = "production"
     Cluster     = each.value
   })
-
-  depends_on = [module.cxm_organization_enablement]
 }
 
 #################################################################
@@ -169,8 +183,8 @@ module "cxm_staging_eks_enablement" {
   for_each = toset(var.staging_cluster_names)
 
   cluster_name = each.value
-  # Use the organization module's output to get the IAM role ARN
-  iam_role_arn = "arn:aws:iam::${var.staging_account_id}:role/${var.prefix}-asset-crawler"
+  # Construct IAM role ARN from account ID and role name
+  iam_role_arn = "arn:aws:iam::${data.aws_caller_identity.staging.account_id}:role/${module.cxm_integration.cxm_iam_role_name}"
 
   # Staging clusters get namespace-scoped access for security
   access_scope_type       = "namespace"
@@ -183,95 +197,4 @@ module "cxm_staging_eks_enablement" {
     Account     = "staging"
     Cluster     = each.value
   })
-
-  depends_on = [module.cxm_organization_enablement]
-}
-
-#################################################################
-# Cross-Account Role for EKS Access (Alternative approach)
-#################################################################
-
-# Alternative: Create a cross-account role that can be assumed by CXM
-# This is useful if you want centralized role management
-resource "aws_iam_role" "cxm_cross_account_eks_role" {
-  provider = aws.management
-
-  name = "${var.prefix}-cross-account-eks-access"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          AWS = "arn:aws:iam::${var.cxm_aws_account_id}:root"
-        }
-        Action = "sts:AssumeRole"
-        Condition = {
-          StringEquals = {
-            "sts:ExternalId" = var.cxm_external_id
-          }
-        }
-      }
-    ]
-  })
-
-  tags = merge(var.tags, {
-    Purpose = "cross-account-eks-access"
-  })
-}
-
-# Policy allowing the cross-account role to assume member account roles
-resource "aws_iam_role_policy" "cxm_cross_account_assume_policy" {
-  provider = aws.management
-
-  name = "${var.prefix}-cross-account-assume-policy"
-  role = aws_iam_role.cxm_cross_account_eks_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = "sts:AssumeRole"
-        Resource = [
-          "arn:aws:iam::${var.production_account_id}:role/${var.prefix}-asset-crawler",
-          "arn:aws:iam::${var.staging_account_id}:role/${var.prefix}-asset-crawler"
-        ]
-      }
-    ]
-  })
-}
-
-#################################################################
-# Monitoring and Compliance
-#################################################################
-
-# CloudWatch dashboard for monitoring CXM access across clusters
-resource "aws_cloudwatch_dashboard" "cxm_eks_monitoring" {
-  provider = aws.management
-
-  dashboard_name = "${var.prefix}-eks-access-monitoring"
-
-  dashboard_body = jsonencode({
-    widgets = [
-      {
-        type   = "metric"
-        width  = 12
-        height = 6
-        properties = {
-          metrics = [
-            ["AWS/EKS", "cluster_failed_request_count"],
-            [".", "cluster_request_total"]
-          ]
-          period = 300
-          stat   = "Sum"
-          region = var.aws_region
-          title  = "EKS API Request Metrics"
-        }
-      }
-    ]
-  })
-
-  tags = var.tags
 }

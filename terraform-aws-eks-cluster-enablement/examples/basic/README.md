@@ -44,7 +44,7 @@ This example demonstrates how to use the `terraform-aws-eks-cluster-enablement` 
 
 ## What This Example Does
 
-1. **Account Enablement**: Creates the CXM IAM role using the `terraform-aws-account-enablement` module
+1. **CXM Integration**: Enables CXM access using the main `terraform-aws-cxm-integration` module (automatically handles account or organization deployment)
 2. **EKS Configuration**: Configures the EKS cluster to allow the CXM role to access cluster resources
 3. **Access Method**: Automatically chooses between modern access entries or legacy aws-auth ConfigMap based on cluster capabilities
 

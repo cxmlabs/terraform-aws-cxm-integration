@@ -51,4 +51,5 @@ No modules.
 | cxm_external_id | External ID to use in the trust relationship. |
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access. |
 | prefix | Prefix to use for all resources created by this module. |
+| iam_role_name | CxM IAM Role deployed in all accounts |
 <!-- END_TF_DOCS -->

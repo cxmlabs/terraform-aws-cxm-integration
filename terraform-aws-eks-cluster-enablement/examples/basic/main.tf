@@ -39,13 +39,16 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.cluster.token
 }
 
-# Example: Enable CXM on a single AWS account
-module "cxm_account_enablement" {
-  source = "../../terraform-aws-account-enablement"
+# Example: Enable CXM on the account/organization
+module "cxm_integration" {
+  source = "../../" # Main CXM integration module
 
   cxm_aws_account_id = var.cxm_aws_account_id
   cxm_external_id    = var.cxm_external_id
-  iam_role_name      = "asset-crawler"
+
+  # Required for most deployments
+  cost_usage_report_bucket_name = var.cost_usage_report_bucket_name
+  cloudtrail_bucket_name        = var.cloudtrail_bucket_name
 
   tags = var.tags
 }
@@ -55,7 +58,7 @@ module "cxm_eks_enablement" {
   source = "../.."
 
   cluster_name = var.cluster_name
-  iam_role_arn = module.cxm_account_enablement.iam_role_arn
+  iam_role_arn = module.cxm_integration.cxm_iam_role_arn # Automatically selects the right role
 
   # Module automatically detects cluster capabilities and uses appropriate method
 

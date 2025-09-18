@@ -12,3 +12,8 @@ output "prefix" {
   value       = var.prefix
   description = "Prefix to use for all resources created by this module."
 }
+
+output "iam_role_name" {
+  value       = "${var.prefix}-asset-crawler${local.stack_and_role_suffix}"
+  description = "CxM IAM Role deployed in all accounts"
+}

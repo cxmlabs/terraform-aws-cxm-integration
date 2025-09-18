@@ -22,6 +22,25 @@ variable "prefix" {
   description = "Prefix to use for naming resources"
 }
 
+# S3 Bucket Configuration
+variable "cost_usage_report_bucket_name" {
+  type        = string
+  description = "Name of the S3 bucket containing Cost and Usage Report data"
+}
+
+variable "cloudtrail_bucket_name" {
+  type        = string
+  description = "Name of the S3 bucket containing CloudTrail logs"
+  default     = null
+}
+
+# CXM Integration Configuration
+variable "deployment_targets" {
+  type        = set(any)
+  description = "Deployment targets for organization-wide enablement"
+  default     = []
+}
+
 # Organization Configuration
 variable "organizational_unit_ids" {
   type        = list(string)
