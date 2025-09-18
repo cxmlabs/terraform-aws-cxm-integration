@@ -176,9 +176,6 @@ module "cxm_staging_eks_enablement" {
   access_scope_type       = "namespace"
   access_scope_namespaces = var.staging_allowed_namespaces
 
-  # Custom username for staging environments
-  user_name = "cxm-staging-crawler"
-
   # Module automatically detects cluster capabilities
 
   tags = merge(var.tags, {

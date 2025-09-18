@@ -67,9 +67,6 @@ module "cxm_eks_enablement" {
   access_scope_type       = "namespace"
   access_scope_namespaces = ["monitoring", "logging", "kube-system"]
 
-  # Custom username in Kubernetes
-  user_name = "cxm-crawler"
-
   tags = {
     Environment = "staging"
   }
@@ -133,7 +130,6 @@ To upgrade a legacy cluster to use access entries:
 | cluster_name | Name of the EKS cluster to configure access for | `string` | n/a | yes |
 | iam_role_arn | ARN or name of the IAM role created by the CXM account enablement module | `string` | n/a | yes |
 | kubernetes_groups | List of Kubernetes groups to assign to the IAM role (aws-auth ConfigMap only) | `list(string)` | `[]` | no |
-| user_name | Username to use in Kubernetes for the IAM role | `string` | `null` | no |
 | access_scope_type | Type of access scope for the policy association ('cluster' or 'namespace') | `string` | `"cluster"` | no |
 | access_scope_namespaces | List of namespaces for the access scope when type is 'namespace' | `list(string)` | `[]` | no |
 | tags | A map/dictionary of Tags to be assigned to created resources | `map(string)` | `{}` | no |
