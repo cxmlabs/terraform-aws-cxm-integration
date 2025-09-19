@@ -105,7 +105,7 @@ Then re-run Terraform - the module will automatically detect the new capability 
 ### Access Entries (Modern)
 For clusters that support access entries (EKS API version 2023-10-14 or later), the module will:
 1. Create an EKS access entry for the CXM IAM role
-2. Associate the `AmazonEKSViewPolicy` with cluster or namespace scope
+2. Associate the `AmazonEKSAdminViewPolicy` with cluster or namespace scope
 3. Grant read-only access to cluster resources
 
 ### aws-auth ConfigMap (Legacy)
@@ -120,32 +120,7 @@ To upgrade a legacy cluster to use access entries:
 2. Re-run Terraform - the module will automatically detect the new capability and switch to access entries
 
 <!-- BEGIN_TF_DOCS -->
-## Inputs
-
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| cluster_name | Name of the EKS cluster to configure access for | `string` | n/a | yes |
-| iam_role_arn | ARN or name of the IAM role created by the CXM account enablement module | `string` | n/a | yes |
-| kubernetes_groups | List of Kubernetes groups to assign to the IAM role (aws-auth ConfigMap only) | `list(string)` | `[]` | no |
-| access_scope_type | Type of access scope for the policy association ('cluster' or 'namespace') | `string` | `"cluster"` | no |
-| access_scope_namespaces | List of namespaces for the access scope when type is 'namespace' | `list(string)` | `[]` | no |
-| tags | A map/dictionary of Tags to be assigned to created resources | `map(string)` | `{}` | no |
-
-## Outputs
-
-| Name | Description |
-|------|-------------|
-| cluster_name | Name of the EKS cluster that was configured |
-| cluster_endpoint | Endpoint URL of the EKS cluster |
-| cluster_account_id | ID of the AWS Account where the cluster is |
-| cluster_supports_access_entries | Whether the cluster natively supports access entries |
-| access_entry_created | Whether an access entry was created for the CXM role |
-| policy_association_created | Whether a policy association was created for the CXM role |
-| aws_auth_configmap_updated | Whether the aws-auth ConfigMap was updated (for legacy clusters) |
-| iam_role_arn | ARN of the IAM role that was granted access to the cluster |
-| access_method | Method used to grant access to the cluster (access_entries or aws_auth_configmap) |
-
-## Requirements
+### Requirements
 
 | Name | Version |
 |------|---------|
@@ -153,12 +128,52 @@ To upgrade a legacy cluster to use access entries:
 | aws | >= 5.0 |
 | kubernetes | >= 2.20 |
 
-## Providers
+### Providers
 
 | Name | Version |
 |------|---------|
-| aws | >= 5.0 |
-| kubernetes | >= 2.20 |
+| aws | 6.13.0 |
+| kubernetes | 2.38.0 |
+
+### Modules
+
+No modules.
+
+### Resources
+
+| Name | Type |
+|------|------|
+| [aws_eks_access_entry.cxm_access_entry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_access_entry) | resource |
+| [aws_eks_access_policy_association.cxm_view_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_access_policy_association) | resource |
+| [kubernetes_config_map_v1_data.aws_auth](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map_v1_data) | resource |
+| [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_cluster) | data source |
+| [aws_iam_role.cxm_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_role) | data source |
+| [kubernetes_config_map_v1.aws_auth](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/data-sources/config_map_v1) | data source |
+
+### Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| cluster_name | Name of the EKS cluster to configure access for | `string` | n/a | yes |
+| iam_role_arn | ARN or name of the IAM role created by the CXM account enablement module (e.g., output from terraform-aws-account-enablement module) | `string` | n/a | yes |
+| kubernetes_groups | List of Kubernetes groups to assign to the IAM role. Only used for aws-auth ConfigMap method. | `list(string)` | `[]` | no |
+| access_scope_type | Type of access scope for the policy association. Valid values: 'cluster' or 'namespace' | `string` | `"cluster"` | no |
+| access_scope_namespaces | List of namespaces for the access scope when access_scope_type is 'namespace'. Required when access_scope_type is 'namespace'. | `list(string)` | `[]` | no |
+| tags | A map/dictionary of Tags to be assigned to created resources. | `map(string)` | `{}` | no |
+
+### Outputs
+
+| Name | Description |
+|------|-------------|
+| cluster_name | Name of the EKS cluster that was configured |
+| cluster_endpoint | Endpoint URL of the EKS cluster |
+| cluster_account_id | AWS Account ID where the EKS cluster is located |
+| cluster_supports_access_entries | Whether the cluster natively supports access entries |
+| access_entry_created | Whether an access entry was created for the CXM role |
+| policy_association_created | Whether a policy association was created for the CXM role |
+| aws_auth_configmap_updated | Whether the aws-auth ConfigMap was updated (for legacy clusters) |
+| iam_role_arn | ARN of the IAM role that was granted access to the cluster |
+| access_method | Method used to grant access to the cluster (access_entries or aws_auth_configmap) |
 <!-- END_TF_DOCS -->
 
 ## Permissions
@@ -179,7 +194,7 @@ The module requires the following permissions:
 
 - The module automatically detects the cluster's access entry support by checking the `access_config` block
 - When upgrading legacy clusters, the authentication mode is set to `API_AND_CONFIG_MAP` to maintain backward compatibility
-- The `AmazonEKSViewPolicy` provides read-only access to cluster resources
+- The `AmazonEKSAdminViewPolicy` provides read-only access to all cluster resources
 - For namespace-scoped access, ensure the specified namespaces exist in the cluster
 - The module preserves existing aws-auth ConfigMap entries when updating legacy clusters
 
