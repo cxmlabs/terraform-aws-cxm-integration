@@ -53,7 +53,7 @@ resource "aws_eks_access_policy_association" "cxm_view_policy" {
   count = local.cluster_supports_access_entries ? 1 : 0
 
   cluster_name  = var.cluster_name
-  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy"
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminViewPolicy"
   principal_arn = data.aws_iam_role.cxm_role.arn
 
   access_scope {
