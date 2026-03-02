@@ -150,9 +150,10 @@ No resources.
 |------|-------------|------|---------|:--------:|
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access to. Provided by CXM. | `string` | n/a | yes |
 | cxm_external_id | External ID to use in the trust relationship. Provided by CXM. | `string` | n/a | yes |
-| cost_usage_report_bucket_name | Name of the bucket that is used to store CUR data. Should be set if disable_cur_analysis is not set. | `string` | n/a | yes |
+| cost_usage_report_bucket_name | Name of the bucket that is used to store CUR data. Required when disable_cur_analysis is false (the default). | `string` | `null` | no |
 | cloudtrail_bucket_name | Name of the bucket that is used to store Cloudtrail data. Should be set if disable_cloudtrail_analysis is not set. | `string` | `null` | no |
 | disable_asset_discovery | Disable asset discovery permissions. This is strongly discouraged and will limit a lot the services provided by CXM. Enable by default. | `bool` | `false` | no |
+| disable_cur_analysis | Disable CUR analysis. Set to true when CUR is managed separately (e.g., lone account used only for metadata crawling). Enabled by default. | `bool` | `false` | no |
 | disable_cloudtrail_analysis | Disable Cloudtrail analysis permissions. This is strongly discouraged and will limit a lot the services provided by CXM. Enable by default. | `bool` | `false` | no |
 | use_lone_account_instead_of_aws_organization | If your AWS account is not using AWS Organization and is considered a 'lone account', set this to true. This will enable CXM on a single account. False by default. | `bool` | `false` | no |
 | enable_benchmarking | Enabled benchmarking to authorize pro-active rightsizing optimization of resources. Disabled by default. | `bool` | `false` | no |
