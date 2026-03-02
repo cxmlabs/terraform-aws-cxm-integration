@@ -102,7 +102,7 @@ provider "aws" {
 ```hcl
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.1.0"
+  version = "0.4.2"
 
   providers = {
     aws.root       = aws.root
@@ -209,7 +209,7 @@ provider "aws" {
 ```hcl
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.1.0"
+  version = "0.4.2"
 
   providers = {
     aws.root       = aws
@@ -291,7 +291,7 @@ Update the `main.tf` from Section 1 to include `deployment_targets`:
 ```hcl
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.1.0"
+  version = "0.4.2"
 
   providers = {
     aws.root       = aws.root
@@ -370,7 +370,7 @@ The default value of `deployment_targets` is `[]` (empty), which means the Stack
 ```hcl
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.1.0"
+  version = "0.4.2"
 
   providers = {
     aws.root       = aws.root
@@ -578,7 +578,7 @@ These variables can be added to any scenario above:
 ```hcl
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.1.0"
+  version = "0.4.2"
 
   providers = {
     aws.root       = aws.root
