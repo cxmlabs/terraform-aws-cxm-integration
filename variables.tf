@@ -12,7 +12,8 @@ variable "cxm_external_id" {
 
 variable "cost_usage_report_bucket_name" {
   type        = string
-  description = "Name of the bucket that is used to store CUR data. Should be set if disable_cur_analysis is not set."
+  default     = null
+  description = "Name of the bucket that is used to store CUR data. Required when disable_cur_analysis is false (the default)."
 }
 
 ## Strongly recommended
@@ -27,6 +28,12 @@ variable "disable_asset_discovery" {
   type        = bool
   default     = false
   description = "Disable asset discovery permissions. This is strongly discouraged and will limit a lot the services provided by CXM. Enable by default."
+}
+
+variable "disable_cur_analysis" {
+  type        = bool
+  default     = false
+  description = "Disable CUR analysis. Set to true when CUR is managed separately (e.g., lone account used only for metadata crawling). Enabled by default."
 }
 
 variable "disable_cloudtrail_analysis" {
