@@ -27,7 +27,7 @@ This Terraform module enables Cloud ex Machina (CXM) access to AWS EKS clusters 
 # First, enable CXM on the account/organization
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.1.0"
+  version = "0.4.2"
 
   cxm_aws_account_id = "123456789012"
   cxm_external_id    = "your-external-id"

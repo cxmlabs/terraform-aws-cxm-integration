@@ -12,7 +12,7 @@ Usage example to setup your account, when using AWS Organisation :
 ```hcl
 module "cxm-integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.1.0"
+  version = "0.4.2"
 
   providers = {
     aws.root       = aws.root-us-east-1
@@ -46,7 +46,7 @@ provider "aws" {
 
 module "cxm-integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.1.0"
+  version = "0.4.2"
 
   providers = {
     aws.root       = aws
