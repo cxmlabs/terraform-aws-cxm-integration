@@ -127,7 +127,11 @@ provider "aws" {
 
 ### Providers
 
-No providers.
+| Name | Version |
+|------|---------|
+| aws.root | ~> 5.0 |
+| aws.cur | ~> 5.0 |
+| aws.cloudtrail | ~> 5.0 |
 
 ### Modules
 
@@ -142,7 +146,14 @@ No providers.
 
 ### Resources
 
-No resources.
+| Name | Type |
+|------|------|
+| [aws_caller_identity.cloudtrail](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_caller_identity.cur](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_caller_identity.root](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_region.cloudtrail](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
+| [aws_region.cur](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
+| [aws_region.root](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 
 ### Inputs
 
@@ -172,4 +183,11 @@ No resources.
 | organization_iam_role_arn | ARN of the CXM IAM role for organization root deployment |
 | benchmarking_iam_role_arn | ARN of the CXM IAM role for benchmarking account |
 | cxm_iam_role_name | Name of the CXM IAM role (automatically selects between lone account or organization deployment) |
+| root_account_id | AWS account ID used for the root (management or lone account) deployment |
+| root_region | AWS region used for the root deployment (organization crawler and EventBridge rules) |
+| cur_account_id | AWS account ID where the CUR reader role is deployed |
+| cur_region | AWS region used for the CUR deployment (must match the CUR S3 bucket region) |
+| cloudtrail_account_id | AWS account ID where the CloudTrail reader role is deployed |
+| cloudtrail_region | AWS region used for the CloudTrail deployment (must match the CloudTrail S3 bucket region) |
+| stackset_deployment_region | AWS region where StackSet instances deploy IAM roles in member accounts (hardcoded to us-east-1) |
 <!-- END_TF_DOCS -->
