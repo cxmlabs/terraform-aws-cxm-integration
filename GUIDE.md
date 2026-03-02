@@ -1,14 +1,40 @@
 # CXM Integration - Step-by-Step Installation Guide
 
-This guide walks you through deploying the CXM integration module across four distinct scenarios. Pick the section that matches your AWS setup.
+## How to use this guide
 
-| Scenario | Section | AWS Organization Required? |
-|----------|---------|---------------------------|
-| Organization foundation (management account) | [Section 1](#section-1-organization-foundation) | Yes |
-| Lone account (no Organization) | [Section 2](#section-2-lone-account-setup) | No |
-| Deploy to a single OU | [Section 3](#section-3-deploy-to-a-single-ou) | Yes (builds on Section 1) |
-| Full organization (all accounts) | [Section 4](#section-4-full-organization-setup) | Yes (builds on Section 1) |
-| EKS cluster access | [Bonus](#bonus-eks-cluster-enablement) | Either |
+Every CXM deployment starts with **[Section 1: Organization Foundation](#section-1-organization-foundation)** — this sets up the management account with the organization crawler and CUR reader. From there, choose how broadly to deploy asset crawlers to member accounts:
+
+### Production deployment
+
+> Section 1 + Section 4
+
+Deploy CXM across your entire AWS Organization. All current and future member accounts automatically receive CXM roles.
+
+1. [Section 1: Organization Foundation](#section-1-organization-foundation) — management account setup
+2. [Section 4: Full Organization Setup](#section-4-full-organization-setup) — deploy to all member accounts via StackSets
+
+### PoC / PoV deployment
+
+> Section 1 + (Section 2 and/or Section 3)
+
+Validate the CXM integration on a limited scope before rolling out to production. Combine any of:
+
+1. [Section 1: Organization Foundation](#section-1-organization-foundation) — management account setup (always required)
+2. Then pick one or more:
+   - [Section 2: Lone Account Setup](#section-2-lone-account-setup) — enable metadata crawling on specific individual accounts
+   - [Section 3: Deploy to a Single OU](#section-3-deploy-to-a-single-ou) — deploy to all accounts within a specific OU
+
+When the PoC is validated, move to production by replacing Sections 2/3 with [Section 4](#section-4-full-organization-setup).
+
+### Optional add-ons
+
+These can be added to any deployment above:
+
+| Add-on | Section | Description |
+|--------|---------|-------------|
+| EKS cluster access | [Bonus: EKS](#bonus-eks-cluster-enablement) | Grant CXM read-only access to EKS clusters |
+| CloudTrail analysis | [Enabling CloudTrail](#enabling-cloudtrail-analysis-optional) | Let CXM analyze CloudTrail logs for deeper usage insights |
+| Additional variables | [Optional Configuration](#optional-configuration) | Prefix, suffix, permission boundaries, KMS keys, benchmarking |
 
 ---
 
