@@ -123,15 +123,15 @@ provider "aws" {
 | Name | Version |
 |------|---------|
 | terraform | >= 1.5.0 |
-| aws | ~> 5.0 |
+| aws | >= 5.0 |
 
 ### Providers
 
 | Name | Version |
 |------|---------|
-| aws.root | ~> 5.0 |
-| aws.cur | ~> 5.0 |
-| aws.cloudtrail | ~> 5.0 |
+| aws.root | >= 5.0 |
+| aws.cur | >= 5.0 |
+| aws.cloudtrail | >= 5.0 |
 
 ### Modules
 
