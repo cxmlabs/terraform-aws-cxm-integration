@@ -54,6 +54,21 @@ output "cloudtrail_region" {
   description = "AWS region used for the CloudTrail deployment (must match the CloudTrail S3 bucket region)"
 }
 
+output "flowlogs_account_id" {
+  value       = local.enable_flowlogs ? data.aws_caller_identity.flowlogs.account_id : null
+  description = "AWS account ID where the VPC Flow Logs reader role is deployed"
+}
+
+output "flowlogs_region" {
+  value       = local.enable_flowlogs ? data.aws_region.flowlogs.name : null
+  description = "AWS region used for the VPC Flow Logs deployment (must match the Flow Logs S3 bucket region)"
+}
+
+output "flowlogs_iam_role_arn" {
+  value       = length(module.enable_flowlogs) > 0 ? module.enable_flowlogs[0].iam_role_arn : null
+  description = "ARN of the CXM IAM role for VPC Flow Logs reading"
+}
+
 output "stackset_deployment_region" {
   value       = local.enable_root_org_discovery ? "us-east-1" : null
   description = "AWS region where StackSet instances deploy IAM roles in member accounts (hardcoded to us-east-1)"

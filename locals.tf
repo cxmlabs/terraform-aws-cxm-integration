@@ -5,6 +5,7 @@ locals {
   enable_benchmarking_account   = var.enable_benchmarking == true
   enable_cur                    = !var.disable_cur_analysis
   enable_cloudtrail             = !var.disable_cloudtrail_analysis
+  enable_flowlogs               = !var.disable_flowlogs_analysis
   prefix                        = var.prefix
   role_suffix                   = var.role_suffix != null ? "-${var.role_suffix}" : ""
   tags = merge({

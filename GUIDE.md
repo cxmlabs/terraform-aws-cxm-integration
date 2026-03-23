@@ -34,6 +34,7 @@ These can be added to any deployment above:
 |--------|---------|-------------|
 | EKS cluster access | [Bonus: EKS](#bonus-eks-cluster-enablement) | Grant CXM read-only access to EKS clusters |
 | CloudTrail analysis | [Enabling CloudTrail](#enabling-cloudtrail-analysis-optional) | Let CXM analyze CloudTrail logs for deeper usage insights |
+| VPC Flow Logs analysis | [Enabling Flow Logs](#enabling-vpc-flow-logs-analysis-optional) | Let CXM analyze centralized VPC Flow Logs from S3 |
 | Additional variables | [Optional Configuration](#optional-configuration) | Prefix, suffix, permission boundaries, KMS keys, benchmarking |
 
 ---
@@ -108,6 +109,7 @@ module "cxm_integration" {
     aws.root       = aws.root
     aws.cur        = aws.cur
     aws.cloudtrail = aws.root  # Not used — CloudTrail analysis is disabled below
+    aws.flowlogs   = aws.root  # Not used — Flow Logs analysis is disabled by default
   }
 
   cxm_aws_account_id = "REPLACE_WITH_CXM_ACCOUNT_ID"
@@ -215,6 +217,7 @@ module "cxm_integration" {
     aws.root       = aws
     aws.cur        = aws  # Not used — CUR analysis is disabled below
     aws.cloudtrail = aws  # Not used — CloudTrail analysis is disabled below
+    aws.flowlogs   = aws  # Not used — Flow Logs analysis is disabled by default
   }
 
   use_lone_account_instead_of_aws_organization = true
@@ -297,6 +300,7 @@ module "cxm_integration" {
     aws.root       = aws.root
     aws.cur        = aws.cur
     aws.cloudtrail = aws.root  # Not used — CloudTrail analysis is disabled below
+    aws.flowlogs   = aws.root  # Not used — Flow Logs analysis is disabled by default
   }
 
   cxm_aws_account_id = "REPLACE_WITH_CXM_ACCOUNT_ID"
@@ -376,6 +380,7 @@ module "cxm_integration" {
     aws.root       = aws.root
     aws.cur        = aws.cur
     aws.cloudtrail = aws.root  # Not used — CloudTrail analysis is disabled below
+    aws.flowlogs   = aws.root  # Not used — Flow Logs analysis is disabled by default
   }
 
   cxm_aws_account_id = "REPLACE_WITH_CXM_ACCOUNT_ID"
@@ -522,6 +527,7 @@ module "cxm_integration" {
     aws.root       = aws.root
     aws.cur        = aws.cur
     aws.cloudtrail = aws.cloudtrail  # Point to the CloudTrail account
+    aws.flowlogs   = aws.root       # Not used — Flow Logs analysis is disabled by default
   }
 
   # Remove disable_cloudtrail_analysis (or set to false)
@@ -556,6 +562,75 @@ No provider changes needed — `aws.cloudtrail` already points to `aws` (same ac
 
 ---
 
+## Enabling VPC Flow Logs Analysis (Optional)
+
+VPC Flow Logs analysis lets CXM read your centralized VPC Flow Logs from S3 to provide network traffic insights. It is **entirely optional** — the module works fully without it.
+
+The Flow Logs S3 bucket can be in a **different AWS account and region** from your other resources.
+
+To enable it, make these changes to any section above:
+
+### For Organization setups (Sections 1, 3, 4)
+
+1. **Add a Flow Logs provider** to `provider.tf` — the region **must** match the Flow Logs S3 bucket's region:
+
+```hcl
+# Provider for the Flow Logs account — MUST be in the same region as the Flow Logs bucket
+provider "aws" {
+  region  = "eu-west-1"        # <-- MUST match your Flow Logs bucket's region
+  profile = "org-network-logs" # <-- Change to your Flow Logs account profile
+  alias   = "flowlogs"
+}
+```
+
+2. **Update the module** in `main.tf`:
+
+```hcl
+module "cxm_integration" {
+  # ... same as before, but change these:
+
+  providers = {
+    aws.root       = aws.root
+    aws.cur        = aws.cur
+    aws.cloudtrail = aws.root       # Or aws.cloudtrail if CloudTrail is enabled
+    aws.flowlogs   = aws.flowlogs   # Point to the Flow Logs account
+  }
+
+  # Enable Flow Logs analysis:
+  disable_flowlogs_analysis = false
+  flowlogs_bucket_name      = "REPLACE_WITH_FLOWLOGS_BUCKET_NAME"
+
+  # Optional: if the Flow Logs bucket is encrypted with a KMS key
+  # flowlogs_kms_key_arn = "arn:aws:kms:eu-west-1:123456789012:key/my-key-id"
+}
+```
+
+### For Lone Account setups (Section 2)
+
+Update the module in `main.tf`:
+
+```hcl
+module "cxm_integration" {
+  # ... same as before, but change these:
+
+  # Enable Flow Logs analysis:
+  disable_flowlogs_analysis = false
+  flowlogs_bucket_name      = "REPLACE_WITH_FLOWLOGS_BUCKET_NAME"
+}
+```
+
+No provider changes needed — `aws.flowlogs` already points to `aws` (same account).
+
+### What gets created when Flow Logs analysis is enabled
+
+| Resource | Account | Description |
+|----------|---------|-------------|
+| `cxm-flowlogs-reader` IAM role | Flow Logs account | Read-only access to the Flow Logs S3 bucket |
+| EventBridge rules | Flow Logs account | Notifies CXM when new Flow Logs data arrives |
+| Feedback loop IAM role | Flow Logs account | Allows EventBridge to forward events cross-account to CXM |
+
+---
+
 ## Optional Configuration
 
 These variables can be added to any scenario above:
@@ -571,6 +646,9 @@ These variables can be added to any scenario above:
 | `cost_usage_report_bucket_name` | `null` | S3 bucket storing CUR data (required when CUR analysis is enabled) |
 | `disable_cloudtrail_analysis` | `false` | Disable CloudTrail analysis (see [Enabling CloudTrail Analysis](#enabling-cloudtrail-analysis-optional)) |
 | `cloudtrail_bucket_name` | `null` | S3 bucket storing CloudTrail logs (required when CloudTrail analysis is enabled) |
+| `disable_flowlogs_analysis` | `true` | Disable VPC Flow Logs analysis (see [Enabling Flow Logs Analysis](#enabling-vpc-flow-logs-analysis-optional)) |
+| `flowlogs_bucket_name` | `null` | S3 bucket storing centralized VPC Flow Logs (required when Flow Logs analysis is enabled) |
+| `flowlogs_kms_key_arn` | `null` | KMS key ARN for encrypted Flow Logs data in S3 |
 | `enable_benchmarking` | `false` | Enable pro-active rightsizing benchmarking |
 
 ### Example with optional variables
@@ -584,6 +662,7 @@ module "cxm_integration" {
     aws.root       = aws.root
     aws.cur        = aws.cur
     aws.cloudtrail = aws.root  # Not used when disable_cloudtrail_analysis = true
+    aws.flowlogs   = aws.root  # Not used — Flow Logs analysis is disabled by default
   }
 
   cxm_aws_account_id = "REPLACE_WITH_CXM_ACCOUNT_ID"
