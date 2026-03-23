@@ -42,6 +42,12 @@ variable "disable_cloudtrail_analysis" {
   description = "Disable Cloudtrail analysis permissions. This is strongly discouraged and will limit a lot the services provided by CXM. Enable by default."
 }
 
+variable "disable_flowlogs_analysis" {
+  type        = bool
+  default     = true
+  description = "Disable VPC Flow Logs analysis. Disabled by default (opt-in). Set to false to enable."
+}
+
 variable "use_lone_account_instead_of_aws_organization" {
   type        = bool
   default     = false
@@ -71,6 +77,18 @@ variable "s3_kms_key_arn" {
   type        = string
   default     = null
   description = "Optional - ARN of the KMS Key that is used to encrypt CUR data"
+}
+
+variable "flowlogs_bucket_name" {
+  type        = string
+  default     = null
+  description = "Name of the S3 bucket storing centralized VPC Flow Logs. Required when disable_flowlogs_analysis is false."
+}
+
+variable "flowlogs_kms_key_arn" {
+  type        = string
+  default     = null
+  description = "Optional - ARN of the KMS key used to encrypt VPC Flow Logs data in S3."
 }
 
 variable "prefix" {

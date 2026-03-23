@@ -113,3 +113,23 @@ module "enable_cloudtrail" {
   s3_bucket_kms_key_arn = var.s3_kms_key_arn
   tags                  = local.tags
 }
+
+# VPC FLOW LOGS
+module "enable_flowlogs" {
+  source = "./terraform-aws-s3-bucket-read"
+
+  count = local.enable_flowlogs ? 1 : 0
+
+  providers = {
+    aws = aws.flowlogs
+  }
+
+  iam_role_external_id = var.cxm_external_id
+  prefix               = local.prefix
+  # This role name will be prefixed by local.prefix when deployed
+  iam_role_name         = "flowlogs-reader${local.role_suffix}"
+  cxm_aws_account_id    = var.cxm_aws_account_id
+  s3_bucket_name        = var.flowlogs_bucket_name
+  s3_bucket_kms_key_arn = var.flowlogs_kms_key_arn
+  tags                  = local.tags
+}
