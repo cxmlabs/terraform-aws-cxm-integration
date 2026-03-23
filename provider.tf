@@ -5,7 +5,7 @@ terraform {
     aws = {
       source                = "hashicorp/aws"
       version               = ">= 5.0"
-      configuration_aliases = [aws.root, aws.cur, aws.cloudtrail, aws.benchmarking, aws.flowlogs]
+      configuration_aliases = [aws.root, aws.cur, aws.cloudtrail, aws.flowlogs]
     }
   }
 }
