@@ -9,11 +9,6 @@ output "organization_iam_role_arn" {
   description = "ARN of the CXM IAM role for organization root deployment"
 }
 
-output "benchmarking_iam_role_arn" {
-  value       = length(module.enable_benchmarking_account) > 0 ? module.enable_benchmarking_account[0].iam_role_arn : null
-  description = "ARN of the CXM IAM role for benchmarking account"
-}
-
 # Helper output that automatically selects the appropriate role based on deployment type
 output "cxm_iam_role_name" {
   value = coalesce(

@@ -2,7 +2,6 @@ locals {
   # feature flags
   enable_root_org_discovery     = var.disable_asset_discovery == false && var.use_lone_account_instead_of_aws_organization == false
   enable_lone_account_discovery = var.disable_asset_discovery == false && var.use_lone_account_instead_of_aws_organization == true
-  enable_benchmarking_account   = var.enable_benchmarking == true
   enable_cur                    = !var.disable_cur_analysis
   enable_cloudtrail             = !var.disable_cloudtrail_analysis
   enable_flowlogs               = !var.disable_flowlogs_analysis

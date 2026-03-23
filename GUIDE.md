@@ -35,7 +35,7 @@ These can be added to any deployment above:
 | EKS cluster access | [Bonus: EKS](#bonus-eks-cluster-enablement) | Grant CXM read-only access to EKS clusters |
 | CloudTrail analysis | [Enabling CloudTrail](#enabling-cloudtrail-analysis-optional) | Let CXM analyze CloudTrail logs for deeper usage insights |
 | VPC Flow Logs analysis | [Enabling Flow Logs](#enabling-vpc-flow-logs-analysis-optional) | Let CXM analyze centralized VPC Flow Logs from S3 |
-| Additional variables | [Optional Configuration](#optional-configuration) | Prefix, suffix, permission boundaries, KMS keys, benchmarking |
+| Additional variables | [Optional Configuration](#optional-configuration) | Prefix, suffix, permission boundaries, KMS keys |
 
 ---
 
@@ -649,8 +649,6 @@ These variables can be added to any scenario above:
 | `disable_flowlogs_analysis` | `true` | Disable VPC Flow Logs analysis (see [Enabling Flow Logs Analysis](#enabling-vpc-flow-logs-analysis-optional)) |
 | `flowlogs_bucket_name` | `null` | S3 bucket storing centralized VPC Flow Logs (required when Flow Logs analysis is enabled) |
 | `flowlogs_kms_key_arn` | `null` | KMS key ARN for encrypted Flow Logs data in S3 |
-| `enable_benchmarking` | `false` | Enable pro-active rightsizing benchmarking |
-
 ### Example with optional variables
 
 ```hcl
@@ -683,5 +681,3 @@ module "cxm_integration" {
   }
 }
 ```
-
-> **Note on `enable_benchmarking`:** When set to `true`, this requires an additional provider alias `aws.benchmarking` pointing to the account where benchmarking will run. The module creates a `cxm-benchmark-runner` IAM role in that account.
