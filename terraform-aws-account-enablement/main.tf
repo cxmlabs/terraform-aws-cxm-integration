@@ -99,6 +99,101 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
     resources = ["*"]
   }
 
+  # ---------------------------------------------------------------------------
+  # Scaling & stop/start permissions (FinOps cost optimization)
+  # ---------------------------------------------------------------------------
+
+  statement {
+    sid = "ECSScaling"
+    actions = [
+      "ecs:UpdateService",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "EC2StopStart"
+    actions = [
+      "ec2:StartInstances",
+      "ec2:StopInstances",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "RDSStopStart"
+    actions = [
+      "rds:StartDBInstance",
+      "rds:StopDBInstance",
+      "rds:StartDBCluster",
+      "rds:StopDBCluster",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "LambdaConcurrency"
+    actions = [
+      "lambda:PutProvisionedConcurrencyConfig",
+      "lambda:DeleteProvisionedConcurrencyConfig",
+      "lambda:PutFunctionConcurrency",
+      "lambda:DeleteFunctionConcurrency",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "EKSNodegroupScaling"
+    actions = [
+      "eks:UpdateNodegroupConfig",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "ASGScaling"
+    actions = [
+      "autoscaling:UpdateAutoScalingGroup",
+      "autoscaling:SetDesiredCapacity",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "AppAutoScaling"
+    actions = [
+      "application-autoscaling:RegisterScalableTarget",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "ElastiCacheScaling"
+    actions = [
+      "elasticache:ModifyReplicationGroup",
+      "elasticache:ModifyCacheCluster",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "RedshiftScaling"
+    actions = [
+      "redshift:PauseCluster",
+      "redshift:ResumeCluster",
+      "redshift:ResizeCluster",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "SageMakerScaling"
+    actions = [
+      "sagemaker:UpdateEndpointWeightsAndCapacities",
+    ]
+    resources = ["*"]
+  }
+
   statement {
     # Explicitly removing read access to S3 objects
     sid           = "ExplicitDenyOnS3Files"
