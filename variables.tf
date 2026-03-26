@@ -54,6 +54,12 @@ variable "use_lone_account_instead_of_aws_organization" {
   description = "If your AWS account is not using AWS Organization and is considered a 'lone account', set this to true. This will enable CXM on a single account. False by default."
 }
 
+variable "enable_scheduling" {
+  type        = bool
+  default     = true
+  description = "Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Enabled by default."
+}
+
 ## Optional
 variable "deployment_targets" {
   type        = set(any)

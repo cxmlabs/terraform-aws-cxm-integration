@@ -53,6 +53,12 @@ variable "cxm_read_only_policy_name" {
   description = "The name of the policy used to enrich ReadOnly to allow Cloud ex Machina to read the Control Plane.  Defaults to cxm-account-ro-$${random_id.uniq.hex} when empty."
 }
 
+variable "enable_scheduling" {
+  type        = bool
+  default     = true
+  description = "Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Enabled by default."
+}
+
 variable "tags" {
   type        = map(string)
   description = "A map/dictionary of Tags to be assigned to created resources."

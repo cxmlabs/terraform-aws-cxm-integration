@@ -32,3 +32,9 @@ variable "stack_and_role_suffix" {
   default     = null
   description = "Suffix to use for the cloudformation stack."
 }
+
+variable "enable_scheduling" {
+  type        = bool
+  default     = true
+  description = "Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Enabled by default."
+}
