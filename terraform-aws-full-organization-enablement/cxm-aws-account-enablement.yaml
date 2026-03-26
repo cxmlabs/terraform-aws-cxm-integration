@@ -18,6 +18,16 @@ Parameters:
     Type: String
     Default: ""
     Description: Role name suffix
+  EnableScheduling:
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: Enable scheduling and scaling permissions for FinOps cost optimization
+
+Conditions:
+  SchedulingEnabled: !Equals [!Ref EnableScheduling, "true"]
 
 Resources:
   ################################################################
@@ -112,9 +122,50 @@ Resources:
               - memorydb:PurchaseReservedNodesOffering
               # Saving Plans full management
               - savingsplans:*
-          # Scaling & stop/start permissions (FinOps cost optimization)
-          - Effect: Allow
-            Sid: SchedulingPermissions
+          # Explicitly denying data plane API Calls
+          - Sid: ExplicitDenyToDataPlane
+            Effect: Deny
+            Resource: "*"
+            Action:
+              - athena:StartCalculationExecution
+              - athena:StartQueryExecution
+              - dynamodb:GetItem
+              - dynamodb:BatchGetItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - ec2:GetConsoleOutput
+              - ec2:GetConsoleScreenshot
+              - ecr:BatchGetImage
+              - ecr:GetAuthorizationToken
+              - ecr:GetDownloadUrlForLayer
+              - ecs:RegisterTaskDefinition
+              - kinesis:GetRecords
+              - kinesis:GetShardIterator
+              - lambda:GetFunction
+              - logs:GetLogEvents
+              - sdb:Select*
+              - sqs:ReceiveMessage
+              - rds-data:*
+
+  ################################################################
+  #
+  # Scheduling & Scaling (FinOps cost optimization)
+  # Only created when EnableScheduling is "true"
+  #
+  ################################################################
+  SchedulingPolicy:
+    Type: AWS::IAM::Policy
+    Condition: SchedulingEnabled
+    DependsOn: IAMCrossAccountExecutionRole
+    Properties:
+      PolicyName: !Sub '${Prefix}-asset-crawler-scheduling${RoleSuffix}'
+      Roles:
+        - !Ref 'IAMCrossAccountExecutionRole'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: SchedulingPermissions
+            Effect: Allow
             Resource: "*"
             Action:
               # ECS Scaling
@@ -139,37 +190,19 @@ Resources:
               - autoscaling:SetDesiredCapacity
               # Application Auto Scaling
               - application-autoscaling:RegisterScalableTarget
-              # ElastiCache Scaling
+              # ElastiCache Scaling (NOTE: these actions are broader than scaling
+              # alone — they also allow changing engine versions, parameter groups,
+              # etc. — but AWS does not offer finer-grained actions)
               - elasticache:ModifyReplicationGroup
               - elasticache:ModifyCacheCluster
-              # Redshift Scaling
+              # Redshift Scaling (NOTE: ResizeCluster also allows changing node
+              # types, not just counts, which could affect costs)
               - redshift:PauseCluster
               - redshift:ResumeCluster
               - redshift:ResizeCluster
               # SageMaker Scaling
               - sagemaker:UpdateEndpointWeightsAndCapacities
-          # Explicitly denying data plane API Calls
-          - Effect: Deny
-            Resource: "*"
-            Action:
-              - athena:StartCalculationExecution
-              - athena:StartQueryExecution
-              - dynamodb:GetItem
-              - dynamodb:BatchGetItem
-              - dynamodb:Query
-              - dynamodb:Scan
-              - ec2:GetConsoleOutput
-              - ec2:GetConsoleScreenshot
-              - ecr:BatchGetImage
-              - ecr:GetAuthorizationToken
-              - ecr:GetDownloadUrlForLayer
-              - kinesis:GetRecords
-              - kinesis:GetShardIterator
-              - lambda:GetFunction
-              - logs:GetLogEvents
-              - sdb:Select*
-              - sqs:ReceiveMessage
-              - rds-data:*
+
   ################################################################
   #
   # Notifications for Feedback Loop

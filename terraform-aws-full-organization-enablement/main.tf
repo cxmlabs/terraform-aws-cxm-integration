@@ -17,6 +17,7 @@ resource "aws_cloudformation_stack_set" "cxm_account_enablement" {
     CustomerAccountID = var.cxm_aws_account_id
     AdminRoleArn      = var.cxm_admin_role_arn
     RoleSuffix        = local.stack_and_role_suffix
+    EnableScheduling  = var.enable_scheduling ? "true" : "false"
   }
 
   template_body = file("${path.module}/cxm-aws-account-enablement.yaml")

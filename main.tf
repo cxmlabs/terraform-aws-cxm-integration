@@ -33,6 +33,7 @@ module "enable_sub_accounts" {
   deployment_targets    = var.deployment_targets
   cxm_admin_role_arn    = module.enable_root_organization[0].iam_role_arn
   stack_and_role_suffix = var.role_suffix
+  enable_scheduling     = local.enable_scheduling
   #tags                 = var.tags
 }
 
@@ -52,6 +53,7 @@ module "enable_lone_account" {
   # This role name will be prefixed by local.prefix when deployed
   iam_role_name           = "organization-crawler${local.role_suffix}"
   permission_boundary_arn = var.permission_boundary_arn
+  enable_scheduling       = local.enable_scheduling
   tags                    = local.tags
 }
 

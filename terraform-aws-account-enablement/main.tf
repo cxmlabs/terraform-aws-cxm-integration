@@ -99,9 +99,67 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
     resources = ["*"]
   }
 
-  # ---------------------------------------------------------------------------
-  # Scaling & stop/start permissions (FinOps cost optimization)
-  # ---------------------------------------------------------------------------
+  statement {
+    # Explicitly removing read access to S3 objects
+    sid           = "ExplicitDenyOnS3Files"
+    effect        = "Deny"
+    actions       = ["s3:GetObject"]
+    not_resources = ["arn:aws:s3:::*/*"]
+  }
+
+  statement {
+    # Explicitly deny to any action that may allow to access customer data
+    sid    = "ExplicitDenyToDataPlane"
+    effect = "Deny"
+    actions = [
+      "athena:StartCalculationExecution",
+      "athena:StartQueryExecution",
+      "dynamodb:GetItem",
+      "dynamodb:BatchGetItem",
+      "dynamodb:Query",
+      "dynamodb:Scan",
+      "ec2:GetConsoleOutput",
+      "ec2:GetConsoleScreenshot",
+      "ecr:BatchGetImage",
+      "ecr:GetAuthorizationToken",
+      "ecr:GetDownloadUrlForLayer",
+      "ecs:RegisterTaskDefinition",
+      "kinesis:GetRecords",
+      "kinesis:GetShardIterator",
+      "lambda:GetFunction",
+      "logs:GetLogEvents",
+      "sdb:Select*",
+      "sqs:ReceiveMessage",
+      "rds-data:*"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "cxm_read_only_policy" {
+  count       = var.use_existing_iam_role_policy ? 0 : 1
+  name        = local.cxm_read_only_policy_name
+  description = "Policy enriching ReadOnly to allow Cloud ex Machina to read the Control Plane without accessing the Data Plane"
+  policy      = data.aws_iam_policy_document.cxm_read_only_policy[0].json
+  tags        = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "cxm_read_only_policy_attachment" {
+  count      = var.use_existing_iam_role_policy ? 0 : 1
+  role       = local.iam_role_name
+  policy_arn = aws_iam_policy.cxm_read_only_policy[0].arn
+  depends_on = [module.cxm_cfg_iam_role]
+}
+
+# ---------------------------------------------------------------------------
+# Scheduling & scaling permissions (FinOps cost optimization)
+# Controlled by var.enable_scheduling — opt-in for customers who want
+# CXM to stop/start/scale their workloads for cost savings.
+# ---------------------------------------------------------------------------
+
+data "aws_iam_policy_document" "cxm_scheduling_policy" {
+  count   = var.use_existing_iam_role_policy || !var.enable_scheduling ? 0 : 1
+  version = "2012-10-17"
 
   statement {
     sid = "ECSScaling"
@@ -168,6 +226,9 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
   }
 
   statement {
+    # NOTE: These actions are broader than scaling alone (they also allow changing
+    # engine versions, parameter groups, etc.) but AWS does not offer more granular
+    # actions for ElastiCache scaling operations.
     sid = "ElastiCacheScaling"
     actions = [
       "elasticache:ModifyReplicationGroup",
@@ -177,6 +238,8 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
   }
 
   statement {
+    # NOTE: ResizeCluster also allows changing node types (not just counts),
+    # which could affect costs. PauseCluster/ResumeCluster are scheduling-only.
     sid = "RedshiftScaling"
     actions = [
       "redshift:PauseCluster",
@@ -193,54 +256,19 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
     ]
     resources = ["*"]
   }
-
-  statement {
-    # Explicitly removing read access to S3 objects
-    sid           = "ExplicitDenyOnS3Files"
-    effect        = "Deny"
-    actions       = ["s3:GetObject"]
-    not_resources = ["arn:aws:s3:::*/*"]
-  }
-
-  statement {
-    # Explicitly deny to any action that may allow to access customer data
-    sid    = "ExplicitDenyToDataPlane"
-    effect = "Deny"
-    actions = [
-      "athena:StartCalculationExecution",
-      "athena:StartQueryExecution",
-      "dynamodb:GetItem",
-      "dynamodb:BatchGetItem",
-      "dynamodb:Query",
-      "dynamodb:Scan",
-      "ec2:GetConsoleOutput",
-      "ec2:GetConsoleScreenshot",
-      "ecr:BatchGetImage",
-      "ecr:GetAuthorizationToken",
-      "ecr:GetDownloadUrlForLayer",
-      "kinesis:GetRecords",
-      "kinesis:GetShardIterator",
-      "lambda:GetFunction",
-      "logs:GetLogEvents",
-      "sdb:Select*",
-      "sqs:ReceiveMessage",
-      "rds-data:*"
-    ]
-    resources = ["*"]
-  }
 }
 
-resource "aws_iam_policy" "cxm_read_only_policy" {
-  count       = var.use_existing_iam_role_policy ? 0 : 1
-  name        = local.cxm_read_only_policy_name
-  description = "Policy enriching ReadOnly to allow Cloud ex Machina to read the Control Plane without accessing the Data Plane"
-  policy      = data.aws_iam_policy_document.cxm_read_only_policy[0].json
+resource "aws_iam_policy" "cxm_scheduling_policy" {
+  count       = var.use_existing_iam_role_policy || !var.enable_scheduling ? 0 : 1
+  name        = "${var.prefix}-scheduling-${random_id.uniq.hex}"
+  description = "Policy granting Cloud ex Machina scheduling and scaling permissions for FinOps cost optimization"
+  policy      = data.aws_iam_policy_document.cxm_scheduling_policy[0].json
   tags        = var.tags
 }
 
-resource "aws_iam_role_policy_attachment" "cxm_read_only_policy_attachment" {
-  count      = var.use_existing_iam_role_policy ? 0 : 1
+resource "aws_iam_role_policy_attachment" "cxm_scheduling_policy_attachment" {
+  count      = var.use_existing_iam_role_policy || !var.enable_scheduling ? 0 : 1
   role       = local.iam_role_name
-  policy_arn = aws_iam_policy.cxm_read_only_policy[0].arn
+  policy_arn = aws_iam_policy.cxm_scheduling_policy[0].arn
   depends_on = [module.cxm_cfg_iam_role]
 }
