@@ -59,6 +59,7 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
       # EC2 Reservations
       "ec2:DescribeReserved*",
       "ec2:DescribeAvailabilityZones",
+      "ec2:DescribeAccountAttributes",
       "ec2:DescribeRegions",
       "ec2:DescribeInstances",
       "ec2:DescribeInstanceTypes",
@@ -153,8 +154,8 @@ resource "aws_iam_role_policy_attachment" "cxm_read_only_policy_attachment" {
 
 # ---------------------------------------------------------------------------
 # Scheduling & scaling permissions (FinOps cost optimization)
-# Controlled by var.enable_scheduling — opt-in for customers who want
-# CXM to stop/start/scale their workloads for cost savings.
+# Controlled by var.enable_scheduling (default: false). Set to true to grant
+# CXM permissions to stop/start/scale workloads for cost savings.
 # ---------------------------------------------------------------------------
 
 data "aws_iam_policy_document" "cxm_scheduling_policy" {
@@ -218,6 +219,9 @@ data "aws_iam_policy_document" "cxm_scheduling_policy" {
   }
 
   statement {
+    # NOTE: RegisterScalableTarget covers all Application Auto Scaling namespaces
+    # (ECS, DynamoDB, AppStream, etc.), not just the services listed above.
+    # AWS does not offer namespace-scoped IAM actions for this service.
     sid = "AppAutoScaling"
     actions = [
       "application-autoscaling:RegisterScalableTarget",

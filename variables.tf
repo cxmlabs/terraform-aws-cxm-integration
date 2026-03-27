@@ -56,8 +56,8 @@ variable "use_lone_account_instead_of_aws_organization" {
 
 variable "enable_scheduling" {
   type        = bool
-  default     = true
-  description = "Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Enabled by default."
+  default     = false
+  description = "Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default."
 }
 
 ## Optional

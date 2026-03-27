@@ -43,7 +43,7 @@ No modules.
 | deployment_targets | A list of Organizational Units from the Organization to deploy to. | `set(any)` | `[]` | no |
 | prefix | Prefix to use for all resources created by this module. | `string` | `"cxm"` | no |
 | stack_and_role_suffix | Suffix to use for the cloudformation stack. | `string` | `null` | no |
-| enable_scheduling | Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Enabled by default. | `bool` | `true` | no |
+| enable_scheduling | Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default. | `bool` | `false` | no |
 
 ### Outputs
 
