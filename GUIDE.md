@@ -684,3 +684,53 @@ module "cxm_integration" {
 ```
 
 > **Note on `enable_scheduling`:** When set to `true`, the module creates an additional IAM policy granting stop/start/scale permissions for EC2, RDS, ECS, EKS, ASG, Lambda, ElastiCache, Redshift, and SageMaker. Disabled by default — set to `true` to enable FinOps scheduling capabilities.
+
+---
+
+## Upgrading
+
+### Upgrading to 1.0.0
+
+This version introduces **breaking changes**:
+
+**1. Benchmarking module removed**
+
+The `enable_benchmarking` variable and `aws.benchmarking` provider alias have been removed. If you were using benchmarking, follow this upgrade sequence:
+
+```hcl
+# Step 1: Disable benchmarking BEFORE upgrading (on your current version)
+enable_benchmarking = false
+```
+
+```bash
+# Step 2: Apply to destroy benchmarking resources cleanly
+terraform apply
+```
+
+```hcl
+# Step 3: Upgrade module version and remove the aws.benchmarking provider alias
+module "cxm_integration" {
+  source  = "cxmlabs/cxm-integration/aws"
+  version = "1.0.0"
+
+  providers = {
+    aws.root       = aws.root
+    aws.cur        = aws.cur
+    aws.cloudtrail = aws.cloudtrail
+    # aws.benchmarking removed — delete this line
+  }
+
+  # enable_benchmarking removed — delete this line
+}
+```
+
+```bash
+# Step 4: Apply
+terraform apply
+```
+
+> **Warning:** If you remove the `aws.benchmarking` provider alias before disabling benchmarking, existing benchmarking resources will become orphaned in your Terraform state and cannot be cleanly destroyed.
+
+**2. New `enable_scheduling` variable**
+
+A new opt-in variable `enable_scheduling` (default: `false`) is available. Set to `true` to grant CXM stop/start/scale permissions for FinOps cost optimization.
