@@ -35,7 +35,7 @@ These can be added to any deployment above:
 | EKS cluster access | [Bonus: EKS](#bonus-eks-cluster-enablement) | Grant CXM read-only access to EKS clusters |
 | CloudTrail analysis | [Enabling CloudTrail](#enabling-cloudtrail-analysis-optional) | Let CXM analyze CloudTrail logs for deeper usage insights |
 | VPC Flow Logs analysis | [Enabling Flow Logs](#enabling-vpc-flow-logs-analysis-optional) | Let CXM analyze centralized VPC Flow Logs from S3 |
-| Additional variables | [Optional Configuration](#optional-configuration) | Prefix, suffix, permission boundaries, KMS keys |
+| Additional variables | [Optional Configuration](#optional-configuration) | Prefix, suffix, permission boundaries, KMS keys, scheduling |
 
 ---
 
@@ -649,6 +649,7 @@ These variables can be added to any scenario above:
 | `disable_flowlogs_analysis` | `true` | Disable VPC Flow Logs analysis (see [Enabling Flow Logs Analysis](#enabling-vpc-flow-logs-analysis-optional)) |
 | `flowlogs_bucket_name` | `null` | S3 bucket storing centralized VPC Flow Logs (required when Flow Logs analysis is enabled) |
 | `flowlogs_kms_key_arn` | `null` | KMS key ARN for encrypted Flow Logs data in S3 |
+| `enable_scheduling` | `false` | Enable scheduling and scaling permissions for FinOps cost optimization |
 ### Example with optional variables
 
 ```hcl
@@ -681,3 +682,5 @@ module "cxm_integration" {
   }
 }
 ```
+
+> **Note on `enable_scheduling`:** When set to `true`, the module creates an additional IAM policy granting stop/start/scale permissions for EC2, RDS, ECS, EKS, ASG, Lambda, ElastiCache, Redshift, and SageMaker. Disabled by default — set to `true` to enable FinOps scheduling capabilities.
