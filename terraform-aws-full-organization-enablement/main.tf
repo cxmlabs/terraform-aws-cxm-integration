@@ -40,4 +40,15 @@ resource "aws_cloudformation_stack_set_instance" "cxm_account_enablement" {
     max_concurrent_count    = 10
     region_concurrency_type = "PARALLEL"
   }
+
+  # Default provider timeouts (30m) are too tight for orgs with many accounts:
+  # StackSet deployment runs in waves of max_concurrent_count, and each
+  # CloudFormation stack takes a few minutes per account. Hitting the timeout
+  # taints the resource and forces a full recreation on next apply even though
+  # the underlying StackSet is healthy.
+  timeouts {
+    create = "90m"
+    update = "90m"
+    delete = "90m"
+  }
 }
