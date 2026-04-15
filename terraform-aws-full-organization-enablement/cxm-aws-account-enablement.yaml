@@ -189,12 +189,12 @@ Resources:
               - autoscaling:UpdateAutoScalingGroup
               - autoscaling:SetDesiredCapacity
               # Application Auto Scaling (NOTE: covers all App Auto Scaling
-              # namespaces — ECS, DynamoDB, AppStream, etc. — AWS does not
+              # namespaces (ECS, DynamoDB, AppStream, etc.); AWS does not
               # offer namespace-scoped IAM actions for this service)
               - application-autoscaling:RegisterScalableTarget
               # ElastiCache Scaling (NOTE: these actions are broader than scaling
-              # alone — they also allow changing engine versions, parameter groups,
-              # etc. — but AWS does not offer finer-grained actions)
+              # alone; they also allow changing engine versions, parameter groups,
+              # etc., but AWS does not offer finer-grained actions)
               - elasticache:ModifyReplicationGroup
               - elasticache:ModifyCacheCluster
               # Redshift Scaling (NOTE: ResizeCluster also allows changing node
