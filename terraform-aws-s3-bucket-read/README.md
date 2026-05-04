@@ -41,7 +41,9 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 | [aws_iam_role_policy_attachment.cxm_cross_account_eventbridge_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.cxm_s3_ro_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_s3_bucket_notification.bucket_notification](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_notification) | resource |
+| [aws_s3_bucket_policy.cross_account](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [random_id.uniq](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
+| [aws_iam_policy_document.cross_account_bucket_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cxm_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cxm_cross_account_eventbridge_put_events](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cxm_s3_ro_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -63,6 +65,7 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 | s3_bucket_name | Name of the bucket that is used to store CUR data | `string` | n/a | yes |
 | s3_bucket_kms_key_arn | Optional - ARN of the KMS Key that is used to encrypt CUR data | `string` | `null` | no |
 | cxm_s3_read_policy_name | Name of the IAM Policy to read the bucket. Defaults to cxm-s3-ro-policy-${random_id.uniq.hex} when empty | `string` | `null` | no |
+| enable_cross_account_s3_access | Add an S3 bucket policy granting the CXM AWS account direct read access to the bucket. Required for cross-account Athena/Glue queries from the CXM account. WARNING: this manages the bucket policy — customers with existing bucket policies should merge manually and leave this false. | `bool` | `false` | no |
 | tags | A map/dictionary of Tags to be assigned to created resources | `map(string)` | `{}` | no |
 
 ### Outputs
@@ -73,4 +76,5 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 | iam_role_name | The IAM Role name |
 | iam_role_arn | The IAM Role ARN |
 | s3_bucket_name | Name of the S3 Bucket |
+| cross_account_bucket_policy_json | The bucket policy JSON granting CXM cross-account read access. Use this to merge into an existing bucket policy when enable_cross_account_s3_access is false. |
 <!-- END_TF_DOCS -->

@@ -69,6 +69,12 @@ variable "cxm_s3_read_policy_name" {
   description = "Name of the IAM Policy to read the bucket. Defaults to cxm-s3-ro-policy-$${random_id.uniq.hex} when empty"
 }
 
+variable "enable_cross_account_s3_access" {
+  type        = bool
+  default     = false
+  description = "Add an S3 bucket policy granting the CXM AWS account direct read access to the bucket. Required for cross-account Athena/Glue queries from the CXM account. WARNING: this manages the bucket policy — customers with existing bucket policies should merge manually and leave this false."
+}
+
 variable "tags" {
   type        = map(string)
   description = "A map/dictionary of Tags to be assigned to created resources"

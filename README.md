@@ -180,6 +180,7 @@ provider "aws" {
 | disable_cur_analysis | Disable CUR analysis. Set to true when CUR is managed separately (e.g., lone account used only for metadata crawling). Enabled by default. | `bool` | `false` | no |
 | disable_cloudtrail_analysis | Disable Cloudtrail analysis permissions. This is strongly discouraged and will limit a lot the services provided by CXM. Enable by default. | `bool` | `false` | no |
 | disable_flowlogs_analysis | Disable VPC Flow Logs analysis. Disabled by default (opt-in). Set to false to enable. | `bool` | `true` | no |
+| enable_cur_cross_account_s3_access | Add a bucket policy on the CUR S3 bucket granting the CXM account direct read access for cross-account Athena/Glue queries. Opt-in. WARNING: manages the full bucket policy — customers with existing bucket policies should merge manually using the output. | `bool` | `false` | no |
 | use_lone_account_instead_of_aws_organization | If your AWS account is not using AWS Organization and is considered a 'lone account', set this to true. This will enable CXM on a single account. False by default. | `bool` | `false` | no |
 | enable_scheduling | Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default. | `bool` | `false` | no |
 | deployment_targets | Add a filter, and list of Organizational Units from the Organization to only deploy to. If left blank, all organization will be crawled by default. | `set(any)` | `[]` | no |

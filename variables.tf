@@ -48,6 +48,12 @@ variable "disable_flowlogs_analysis" {
   description = "Disable VPC Flow Logs analysis. Disabled by default (opt-in). Set to false to enable."
 }
 
+variable "enable_cur_cross_account_s3_access" {
+  type        = bool
+  default     = false
+  description = "Add a bucket policy on the CUR S3 bucket granting the CXM account direct read access for cross-account Athena/Glue queries. Opt-in. WARNING: manages the full bucket policy — customers with existing bucket policies should merge manually using the output."
+}
+
 variable "use_lone_account_instead_of_aws_organization" {
   type        = bool
   default     = false

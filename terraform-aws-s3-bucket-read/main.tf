@@ -142,3 +142,43 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
   bucket      = var.s3_bucket_name
   eventbridge = true
 }
+
+# ---------------------------------------------------------------------------
+# Cross-account direct S3 access (for CXM-side Athena/Glue queries)
+# ---------------------------------------------------------------------------
+
+data "aws_iam_policy_document" "cross_account_bucket_policy" {
+  count = var.enable_cross_account_s3_access ? 1 : 0
+
+  statement {
+    sid    = "CxmCrossAccountDirectRead"
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${var.cxm_aws_account_id}:root"]
+    }
+
+    actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
+    resources = ["arn:aws:s3:::${var.s3_bucket_name}"]
+  }
+
+  statement {
+    sid    = "CxmCrossAccountDirectReadObjects"
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${var.cxm_aws_account_id}:root"]
+    }
+
+    actions   = ["s3:GetObject"]
+    resources = ["arn:aws:s3:::${var.s3_bucket_name}/*"]
+  }
+}
+
+resource "aws_s3_bucket_policy" "cross_account" {
+  count  = var.enable_cross_account_s3_access ? 1 : 0
+  bucket = var.s3_bucket_name
+  policy = data.aws_iam_policy_document.cross_account_bucket_policy[0].json
+}

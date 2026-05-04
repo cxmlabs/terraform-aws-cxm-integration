@@ -17,3 +17,8 @@ output "s3_bucket_name" {
   value       = var.s3_bucket_name
   description = "Name of the S3 Bucket"
 }
+
+output "cross_account_bucket_policy_json" {
+  value       = var.enable_cross_account_s3_access ? data.aws_iam_policy_document.cross_account_bucket_policy[0].json : null
+  description = "The bucket policy JSON granting CXM cross-account read access. Use this to merge into an existing bucket policy when enable_cross_account_s3_access is false."
+}

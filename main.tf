@@ -70,11 +70,12 @@ module "enable_cur" {
   iam_role_external_id = var.cxm_external_id
   prefix               = local.prefix
   # This role name will be prefixed by local.prefix when deployed
-  iam_role_name         = "cur-reader${local.role_suffix}"
-  cxm_aws_account_id    = var.cxm_aws_account_id
-  s3_bucket_name        = var.cost_usage_report_bucket_name
-  s3_bucket_kms_key_arn = var.s3_kms_key_arn
-  tags                  = local.tags
+  iam_role_name                  = "cur-reader${local.role_suffix}"
+  cxm_aws_account_id             = var.cxm_aws_account_id
+  s3_bucket_name                 = var.cost_usage_report_bucket_name
+  s3_bucket_kms_key_arn          = var.s3_kms_key_arn
+  enable_cross_account_s3_access = var.enable_cur_cross_account_s3_access
+  tags                           = local.tags
 }
 
 # CLOUDTRAIL
