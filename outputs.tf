@@ -68,3 +68,8 @@ output "stackset_deployment_region" {
   value       = local.enable_root_org_discovery ? "us-east-1" : null
   description = "AWS region where StackSet instances deploy IAM roles in member accounts (hardcoded to us-east-1)"
 }
+
+output "discovered_account_ids" {
+  value       = local.enable_root_org_discovery ? [for acct in data.aws_organizations_organization.org[0].non_master_accounts : acct.id if acct.status == "ACTIVE"] : []
+  description = "Active sub-account IDs discovered from the organization. Use these to set up the terraform-aws-sub-account-cxm-enablement module."
+}

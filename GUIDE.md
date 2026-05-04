@@ -24,7 +24,16 @@ Validate the CXM integration on a limited scope before rolling out to production
    - [Section 2: Lone Account Setup](#section-2-lone-account-setup) — enable metadata crawling on specific individual accounts
    - [Section 3: Deploy to a Single OU](#section-3-deploy-to-a-single-ou) — deploy to all accounts within a specific OU
 
-When the PoC is validated, move to production by replacing Sections 2/3 with [Section 4](#section-4-full-organization-setup).
+When the PoC is validated, move to production by replacing Sections 2/3 with [Section 4](#section-4-full-organization-setup) or [Section 5](#section-5-terraform-native-sub-account-deployment).
+
+### Fully Terraform-native deployment (no StackSet)
+
+> Section 1 + Section 5
+
+Deploy CXM roles to individual member accounts using pure Terraform — no StackSets or CloudFormation:
+
+1. [Section 1: Organization Foundation](#section-1-organization-foundation) — management account setup (always required)
+2. [Section 5: Terraform-Native Sub-Account Deployment](#section-5-terraform-native-sub-account-deployment) — one module block per account
 
 ### Optional add-ons
 
@@ -35,6 +44,7 @@ These can be added to any deployment above:
 | EKS cluster access | [Bonus: EKS](#bonus-eks-cluster-enablement) | Grant CXM read-only access to EKS clusters |
 | CloudTrail analysis | [Enabling CloudTrail](#enabling-cloudtrail-analysis-optional) | Let CXM analyze CloudTrail logs for deeper usage insights |
 | VPC Flow Logs analysis | [Enabling Flow Logs](#enabling-vpc-flow-logs-analysis-optional) | Let CXM analyze centralized VPC Flow Logs from S3 |
+| Terraform-native sub-accounts | [Section 5](#section-5-terraform-native-sub-account-deployment) | Deploy to member accounts without CloudFormation |
 | Additional variables | [Optional Configuration](#optional-configuration) | Prefix, suffix, permission boundaries, KMS keys, scheduling |
 
 ---
@@ -684,6 +694,189 @@ module "cxm_integration" {
 ```
 
 > **Note on `enable_scheduling`:** When set to `true`, the module creates an additional IAM policy granting stop/start/scale permissions for EC2, RDS, ECS, EKS, ASG, Lambda, ElastiCache, Redshift, and SageMaker. Disabled by default — set to `true` to enable FinOps scheduling capabilities.
+
+---
+
+## Section 5: Terraform-Native Sub-Account Deployment
+
+**What this does:** Deploys CXM asset-crawler roles into individual member accounts using **pure Terraform** — no CloudFormation StackSets. You write one module block per account.
+
+> **When to use this instead of StackSets:**
+> - You want to avoid CloudFormation entirely
+> - You need per-account Terraform state and lifecycle control
+> - You want to selectively enable specific accounts rather than entire OUs
+>
+> **When to stick with StackSets (Sections 3/4):**
+> - You want auto-deployment to new accounts as they join the organization
+> - You have 10+ accounts and don't want to manage individual module blocks
+
+### Prerequisites
+
+- [ ] [Section 1: Organization Foundation](#section-1-organization-foundation) deployed
+- [ ] Terraform >= 1.5.0 and AWS provider >= 5.0
+- [ ] A way to authenticate into each target sub-account (assume role, SSO profile, etc.)
+
+### Understanding the two roles
+
+This approach involves two distinct IAM roles:
+
+1. **Provisioning role** — The role your provider uses to authenticate into the sub-account. You configure this in your provider block (`assume_role`, SSO profile, etc.). Common options:
+   - `OrganizationAccountAccessRole` (created by AWS Organizations in every member account)
+   - `AWSControlTowerExecution` (if using Control Tower)
+   - Any cross-account execution role with IAM + EventBridge write permissions
+
+2. **Runtime role** — The `cxm-asset-crawler` role created by this module. The CXM platform assumes this role at runtime to read your account's resources.
+
+The provisioning role is only used during `terraform apply`. The runtime role is used continuously by the CXM platform.
+
+### Step 1: Get your sub-account IDs
+
+Use the root module output:
+
+```bash
+terraform output discovered_account_ids
+```
+
+Or query AWS directly:
+
+```bash
+aws organizations list-accounts \
+  --profile org-root \
+  --query 'Accounts[?Status==`ACTIVE`].[Id,Name]' \
+  --output table
+```
+
+### Step 2: Disable the CloudFormation StackSet
+
+In your root module configuration, set `disable_stackset_deployment = true` to prevent the StackSet from deploying alongside the native Terraform modules:
+
+```hcl
+module "cxm_integration" {
+  source  = "cxmlabs/cxm-integration/aws"
+  version = "1.0.0"
+
+  # ... your existing Section 1 configuration ...
+
+  disable_stackset_deployment = true  # Use Terraform-native sub-account modules instead
+}
+```
+
+### Step 3: Configure providers and add module blocks
+
+Configure one provider per sub-account, then pass it to the module:
+
+```hcl
+# Providers — one per sub-account
+provider "aws" {
+  alias  = "engineering"
+  region = "us-east-1"
+  assume_role {
+    role_arn = "arn:aws:iam::111111111111:role/OrganizationAccountAccessRole"
+  }
+}
+
+provider "aws" {
+  alias  = "staging"
+  region = "us-east-1"
+  assume_role {
+    role_arn = "arn:aws:iam::222222222222:role/OrganizationAccountAccessRole"
+  }
+}
+
+provider "aws" {
+  alias  = "production"
+  region = "us-east-1"
+  assume_role {
+    role_arn = "arn:aws:iam::333333333333:role/AWSControlTowerExecution"
+  }
+}
+
+# Module blocks — one per sub-account
+module "cxm_sub_account_engineering" {
+  source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
+  version = "1.0.0"
+
+  providers = { aws = aws.engineering }
+
+  cxm_aws_account_id = "REPLACE_WITH_CXM_ACCOUNT_ID"
+  cxm_external_id    = "REPLACE_WITH_CXM_EXTERNAL_ID"
+  cxm_admin_role_arn = module.cxm_integration.organization_iam_role_arn
+
+  tags = {
+    "ManagedBy" = "terraform"
+    "Purpose"   = "cxm-integration"
+  }
+}
+
+module "cxm_sub_account_staging" {
+  source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
+  version = "1.0.0"
+
+  providers = { aws = aws.staging }
+
+  cxm_aws_account_id = "REPLACE_WITH_CXM_ACCOUNT_ID"
+  cxm_external_id    = "REPLACE_WITH_CXM_EXTERNAL_ID"
+  cxm_admin_role_arn = module.cxm_integration.organization_iam_role_arn
+
+  tags = {
+    "ManagedBy" = "terraform"
+    "Purpose"   = "cxm-integration"
+  }
+}
+
+module "cxm_sub_account_production" {
+  source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
+  version = "1.0.0"
+
+  providers = { aws = aws.production }
+
+  cxm_aws_account_id = "REPLACE_WITH_CXM_ACCOUNT_ID"
+  cxm_external_id    = "REPLACE_WITH_CXM_EXTERNAL_ID"
+  cxm_admin_role_arn = module.cxm_integration.organization_iam_role_arn
+
+  enable_scheduling = true  # FinOps cost optimization
+
+  tags = {
+    "ManagedBy" = "terraform"
+    "Purpose"   = "cxm-integration"
+  }
+}
+```
+
+> **Using Control Tower?** Use `AWSControlTowerExecution` in your provider's `assume_role` block (as shown in the production example above).
+
+### Step 4: Apply
+
+```bash
+terraform init -upgrade  # Needed to fetch the sub-account submodule
+terraform plan
+terraform apply
+```
+
+### Step 5: Verify
+
+Check the outputs for each sub-account module:
+
+```bash
+terraform output -module=cxm_sub_account_engineering
+terraform output -module=cxm_sub_account_production
+```
+
+Verify in member account consoles:
+- **IAM > Roles**: look for `cxm-asset-crawler`
+- **EventBridge > Rules**: look for `cxm-iam-change-notifier`
+
+### What was created (in each sub-account)
+
+| Resource | Description |
+|----------|-------------|
+| `cxm-asset-crawler` IAM role | Read-only access to account assets, with commitment management permissions |
+| `cxm-feedback-loop-control-plane` IAM role | Allows EventBridge to forward events cross-account to CXM |
+| EventBridge rule | Notifies CXM of IAM role changes affecting CXM resources |
+| Explicit deny policy | Blocks data-plane access (Athena queries, DynamoDB reads, EC2 console, etc.) |
+| Scheduling policy (optional) | Stop/start/scale permissions when `enable_scheduling = true` |
+
+> **Tip:** For OpenTofu or Terragrunt users, see the [sub-account module README](./terraform-aws-sub-account-cxm-enablement/README.md#tips-for-opentofu-and-terragrunt) for automation patterns that reduce boilerplate.
 
 ---
 
