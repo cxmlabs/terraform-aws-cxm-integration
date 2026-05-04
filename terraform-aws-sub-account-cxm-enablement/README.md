@@ -174,34 +174,9 @@ aws organizations list-accounts \
 
 ### OpenTofu
 
-OpenTofu 1.9+ supports `for_each` on modules, which can reduce boilerplate:
+OpenTofu 1.9+ supports `for_each` on provider blocks, which combined with module `for_each` can reduce boilerplate significantly. Since this module accepts an external provider, you can combine both features. See the [OpenTofu documentation on provider for_each](https://opentofu.org/docs/language/providers/configuration/#for_each-multiple-provider-configurations) for the exact syntax.
 
-```hcl
-variable "sub_accounts" {
-  type = map(object({
-    role_arn = string
-  }))
-  default = {
-    engineering = { role_arn = "arn:aws:iam::111111111111:role/OrganizationAccountAccessRole" }
-    staging     = { role_arn = "arn:aws:iam::222222222222:role/OrganizationAccountAccessRole" }
-    production  = { role_arn = "arn:aws:iam::333333333333:role/AWSControlTowerExecution" }
-  }
-}
-
-module "cxm_sub_accounts" {
-  source   = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
-  version  = "1.0.0"
-  for_each = var.sub_accounts
-
-  providers = { aws = aws.sub[each.key] }
-
-  cxm_aws_account_id = var.cxm_aws_account_id
-  cxm_external_id    = var.cxm_external_id
-  cxm_admin_role_arn = module.cxm_integration.organization_iam_role_arn
-}
-```
-
-> **Note:** `for_each` on modules works with OpenTofu >= 1.9 only. Standard Terraform does not support this yet.
+> **Note:** Standard Terraform does not support `for_each` on provider blocks. This is an OpenTofu-only feature.
 
 ### Terragrunt
 
