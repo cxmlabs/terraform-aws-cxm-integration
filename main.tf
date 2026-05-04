@@ -21,7 +21,7 @@ module "enable_root_organization" {
 module "enable_sub_accounts" {
   source = "./terraform-aws-full-organization-enablement"
 
-  count = local.enable_root_org_discovery ? 1 : 0
+  count = local.enable_stackset ? 1 : 0
 
   providers = {
     aws = aws.root

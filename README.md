@@ -70,6 +70,60 @@ module "cxm-integration" {
 }
 ```
 
+### Terraform-Native Sub-Account Enablement
+
+If you prefer pure Terraform over CloudFormation StackSets, use the standalone sub-account module to deploy CXM roles into individual member accounts. One module block per account:
+
+```hcl
+provider "aws" {
+  alias  = "engineering"
+  region = "us-east-1"
+  assume_role {
+    role_arn = "arn:aws:iam::111111111111:role/OrganizationAccountAccessRole"
+  }
+}
+
+provider "aws" {
+  alias  = "production"
+  region = "us-east-1"
+  assume_role {
+    role_arn = "arn:aws:iam::222222222222:role/AWSControlTowerExecution"
+  }
+}
+
+module "cxm_sub_account_engineering" {
+  source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
+  version = "1.0.0"
+
+  providers = { aws = aws.engineering }
+
+  cxm_aws_account_id = "REPLACE_WITH_CXM_ACCOUNT_ID"
+  cxm_external_id    = "REPLACE_WITH_CXM_EXTERNAL_ID"
+  cxm_admin_role_arn = module.cxm_integration.organization_iam_role_arn
+
+  tags = { "ManagedBy" = "terraform" }
+}
+
+module "cxm_sub_account_production" {
+  source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
+  version = "1.0.0"
+
+  providers = { aws = aws.production }
+
+  cxm_aws_account_id = "REPLACE_WITH_CXM_ACCOUNT_ID"
+  cxm_external_id    = "REPLACE_WITH_CXM_EXTERNAL_ID"
+  cxm_admin_role_arn = module.cxm_integration.organization_iam_role_arn
+
+  tags = { "ManagedBy" = "terraform" }
+}
+```
+
+You configure the provider with whatever auth method you prefer (assume_role, SSO profile, etc.) — the module doesn't manage authentication. Set `disable_stackset_deployment = true` on the root module to skip the CloudFormation StackSet when using this approach.
+
+See the [sub-account module documentation](./terraform-aws-sub-account-cxm-enablement/README.md) for the full two-roles explanation, variables, and OpenTofu/Terragrunt tips, or [Section 5 of the Guide](./GUIDE.md#section-5-terraform-native-sub-account-deployment) for step-by-step instructions.
+
+> **Note:** Standard Terraform cannot dynamically create providers, so you need one module block per account. For auto-deployment to new accounts, use CloudFormation StackSets (the default — see [Section 4 of the Guide](./GUIDE.md#section-4-full-organization-setup)).
+
 ### EKS Cluster Enablement
 
 For enabling CXM access to existing EKS clusters, use the dedicated EKS cluster enablement module:
@@ -163,6 +217,7 @@ provider "aws" {
 | [aws_caller_identity.cur](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_caller_identity.flowlogs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_caller_identity.root](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_organizations_organization.org](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/organizations_organization) | data source |
 | [aws_region.cloudtrail](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_region.cur](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_region.flowlogs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
@@ -182,6 +237,7 @@ provider "aws" {
 | disable_flowlogs_analysis | Disable VPC Flow Logs analysis. Disabled by default (opt-in). Set to false to enable. | `bool` | `true` | no |
 | use_lone_account_instead_of_aws_organization | If your AWS account is not using AWS Organization and is considered a 'lone account', set this to true. This will enable CXM on a single account. False by default. | `bool` | `false` | no |
 | enable_scheduling | Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default. | `bool` | `false` | no |
+| disable_stackset_deployment | Disable CloudFormation StackSet deployment to member accounts. Set to true when using the terraform-aws-sub-account-cxm-enablement module instead. False by default. | `bool` | `false` | no |
 | deployment_targets | Add a filter, and list of Organizational Units from the Organization to only deploy to. If left blank, all organization will be crawled by default. | `set(any)` | `[]` | no |
 | permission_boundary_arn | Optional - ARN of the policy that is used to set the permissions boundary for the role. | `string` | `null` | no |
 | s3_kms_key_arn | Optional - ARN of the KMS Key that is used to encrypt CUR data | `string` | `null` | no |
@@ -208,4 +264,5 @@ provider "aws" {
 | flowlogs_region | AWS region used for the VPC Flow Logs deployment (must match the Flow Logs S3 bucket region) |
 | flowlogs_iam_role_arn | ARN of the CXM IAM role for VPC Flow Logs reading |
 | stackset_deployment_region | AWS region where StackSet instances deploy IAM roles in member accounts (hardcoded to us-east-1) |
+| discovered_account_ids | Active sub-account IDs discovered from the organization. Use these to set up the terraform-aws-sub-account-cxm-enablement module. |
 <!-- END_TF_DOCS -->
