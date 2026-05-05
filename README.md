@@ -12,7 +12,7 @@ Usage example to setup your account, when using AWS Organisation :
 ```hcl
 module "cxm-integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.4.2"
+
 
   providers = {
     aws.root       = aws.root-us-east-1
@@ -47,7 +47,7 @@ provider "aws" {
 
 module "cxm-integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.4.2"
+
 
   providers = {
     aws.root       = aws
@@ -93,7 +93,7 @@ provider "aws" {
 
 module "cxm_sub_account_engineering" {
   source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
-  version = "1.0.0"
+
 
   providers = { aws = aws.engineering }
 
@@ -106,7 +106,7 @@ module "cxm_sub_account_engineering" {
 
 module "cxm_sub_account_production" {
   source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
-  version = "1.0.0"
+
 
   providers = { aws = aws.production }
 

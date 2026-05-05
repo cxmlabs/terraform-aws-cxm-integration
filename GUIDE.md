@@ -113,7 +113,7 @@ provider "aws" {
 ```hcl
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.4.2"
+
 
   providers = {
     aws.root       = aws.root
@@ -221,7 +221,7 @@ provider "aws" {
 ```hcl
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.4.2"
+
 
   providers = {
     aws.root       = aws
@@ -304,7 +304,7 @@ Update the `main.tf` from Section 1 to include `deployment_targets`:
 ```hcl
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.4.2"
+
 
   providers = {
     aws.root       = aws.root
@@ -384,7 +384,7 @@ The default value of `deployment_targets` is `[]` (empty), which means the Stack
 ```hcl
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.4.2"
+
 
   providers = {
     aws.root       = aws.root
@@ -665,7 +665,7 @@ These variables can be added to any scenario above:
 ```hcl
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "0.4.2"
+
 
   providers = {
     aws.root       = aws.root
@@ -753,7 +753,7 @@ In your root module configuration, set `disable_stackset_deployment = true` to p
 ```hcl
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "1.0.0"
+
 
   # ... your existing Section 1 configuration ...
 
@@ -794,7 +794,7 @@ provider "aws" {
 # Module blocks — one per sub-account
 module "cxm_sub_account_engineering" {
   source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
-  version = "1.0.0"
+
 
   providers = { aws = aws.engineering }
 
@@ -810,7 +810,7 @@ module "cxm_sub_account_engineering" {
 
 module "cxm_sub_account_staging" {
   source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
-  version = "1.0.0"
+
 
   providers = { aws = aws.staging }
 
@@ -826,7 +826,7 @@ module "cxm_sub_account_staging" {
 
 module "cxm_sub_account_production" {
   source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
-  version = "1.0.0"
+
 
   providers = { aws = aws.production }
 
@@ -904,7 +904,7 @@ terraform apply
 # Step 3: Upgrade module version and remove the aws.benchmarking provider alias
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-  version = "1.0.0"
+
 
   providers = {
     aws.root       = aws.root
