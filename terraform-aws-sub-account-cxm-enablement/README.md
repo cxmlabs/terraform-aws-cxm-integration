@@ -92,7 +92,7 @@ provider "aws" {
 # Module blocks
 module "cxm_sub_account_engineering" {
   source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
-  version = "1.0.0"
+
 
   providers = { aws = aws.engineering }
 
@@ -105,7 +105,7 @@ module "cxm_sub_account_engineering" {
 
 module "cxm_sub_account_staging" {
   source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
-  version = "1.0.0"
+
 
   providers = { aws = aws.staging }
 
@@ -118,7 +118,7 @@ module "cxm_sub_account_staging" {
 
 module "cxm_sub_account_production" {
   source  = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
-  version = "1.0.0"
+
 
   providers = { aws = aws.production }
 
@@ -185,7 +185,7 @@ Use Terragrunt to loop over accounts with a provider generated per account:
 ```hcl
 # terragrunt.hcl (in each account directory)
 terraform {
-  source = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement?version=1.0.0"
+  source = "cxmlabs/cxm-integration/aws//terraform-aws-sub-account-cxm-enablement"
 }
 
 generate "provider" {
