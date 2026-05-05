@@ -201,10 +201,10 @@ The module requires the following permissions:
 ## Examples
 
 ### Basic Usage
-See the [basic example](./examples/basic) for simple single-account, single-cluster setup.
+See the [basic example](https://github.com/cxmlabs/terraform-aws-cxm-integration/tree/main/terraform-aws-eks-cluster-enablement/examples/basic) for simple single-account, single-cluster setup.
 
 ### Advanced Organization-Wide Deployment
-See the [organization multi-cluster example](./examples/organization-multi-cluster) for enterprise-scale deployment across multiple AWS accounts and EKS clusters within an AWS Organization.
+See the [organization multi-cluster example](https://github.com/cxmlabs/terraform-aws-cxm-integration/tree/main/terraform-aws-eks-cluster-enablement/examples/organization-multi-cluster) for enterprise-scale deployment across multiple AWS accounts and EKS clusters within an AWS Organization.
 
 **Advanced Example Features:**
 - Multi-account EKS cluster access (Production + Staging)

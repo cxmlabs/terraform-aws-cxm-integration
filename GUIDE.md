@@ -876,7 +876,7 @@ Verify in member account consoles:
 | Explicit deny policy | Blocks data-plane access (Athena queries, DynamoDB reads, EC2 console, etc.) |
 | Scheduling policy (optional) | Stop/start/scale permissions when `enable_scheduling = true` |
 
-> **Tip:** For OpenTofu or Terragrunt users, see the [sub-account module README](./terraform-aws-sub-account-cxm-enablement/README.md#tips-for-opentofu-and-terragrunt) for automation patterns that reduce boilerplate.
+> **Tip:** For OpenTofu or Terragrunt users, see the [sub-account module README](https://github.com/cxmlabs/terraform-aws-cxm-integration/tree/main/terraform-aws-sub-account-cxm-enablement#tips-for-opentofu-and-terragrunt) for automation patterns that reduce boilerplate.
 
 ---
 
