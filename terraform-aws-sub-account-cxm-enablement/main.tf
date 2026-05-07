@@ -22,6 +22,7 @@ resource "aws_iam_role" "asset_crawler" {
           ]
         }
         Action = "sts:AssumeRole"
+        # NOTE: Does this do what they think it does? Service principals don't normally use external IDs. - dpanofsky
         Condition = {
           StringEquals = {
             "sts:ExternalId" = var.cxm_external_id
@@ -36,7 +37,13 @@ resource "aws_iam_role" "asset_crawler" {
         Action = [
           "sts:AssumeRole",
           "sts:TagSession",
-        ]
+        ],
+        # NOTE: Adding a organization restriction to be compliant with cloud working group requirements. - dpanofsky
+        Condition = {
+          StringEquals = {
+            "aws:PrincipalOrgID" = data.aws_organizations_organization.current.id
+          }
+        }
       },
     ]
   })
@@ -50,11 +57,15 @@ resource "aws_iam_role_policy_attachment" "read_only" {
 }
 
 resource "aws_iam_role_policy_attachment" "service_quotas" {
-  role       = aws_iam_role.asset_crawler.name
-  policy_arn = "arn:aws:iam::aws:policy/ServiceQuotasFullAccess"
+  role = aws_iam_role.asset_crawler.name
+  # Changed to read only - dpanofsky
+  # policy_arn = "arn:aws:iam::aws:policy/ServiceQuotasFullAccess"
+  policy_arn = "arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "savings_plans" {
-  role       = aws_iam_role.asset_crawler.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess"
+  role = aws_iam_role.asset_crawler.name
+  # Changed to read only - dpanofsky
+  # policy_arn = "arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess"
+  policy_arn = "arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess"
 }

@@ -19,7 +19,8 @@ resource "aws_iam_role_policy" "inventory" {
           # DynamoDB Reservations
           "dynamodb:DescribeReservedCapacity",
           "dynamodb:DescribeReservedCapacityOfferings",
-          "dynamodb:PurchaseReservedCapacityOfferings",
+          # Removed read/write access - dpanofsky
+          # "dynamodb:PurchaseReservedCapacityOfferings",
           # EC2 Reservations
           "ec2:DescribeReserved*",
           "ec2:DescribeAvailabilityZones",
@@ -29,37 +30,44 @@ resource "aws_iam_role_policy" "inventory" {
           "ec2:DescribeInstanceTypes",
           "ec2:DescribeTags",
           "ec2:GetReserved*",
-          "ec2:ModifyReservedInstances",
-          "ec2:PurchaseReservedInstancesOffering",
-          "ec2:CreateReservedInstancesListing",
-          "ec2:CancelReservedInstancesListing",
-          "ec2:GetReservedInstancesExchangeQuote",
-          "ec2:AcceptReservedInstancesExchangeQuote",
+          # Removed read/write access - dpanofsky
+          # "ec2:ModifyReservedInstances",
+          # "ec2:PurchaseReservedInstancesOffering",
+          # "ec2:CreateReservedInstancesListing",
+          # "ec2:CancelReservedInstancesListing",
+          # "ec2:GetReservedInstancesExchangeQuote",
+          # "ec2:AcceptReservedInstancesExchangeQuote",
           # RDS Reservations
           "rds:DescribeReserved*",
           "rds:ListTagsForResource*",
-          "rds:PurchaseReservedDBInstancesOffering",
+          # Removed read/write access - dpanofsky
+          # "rds:PurchaseReservedDBInstancesOffering",
           # Redshift Reservations
           "redshift:DescribeReserved*",
           "redshift:DescribeTags",
           "redshift:GetReserved*",
-          "redshift:AcceptReservedNodeExchange",
-          "redshift:PurchaseReservedNodeOffering",
+          # Removed read/write access - dpanofsky
+          # "redshift:AcceptReservedNodeExchange",
+          # "redshift:PurchaseReservedNodeOffering",
           # ElastiCache Reservations
           "elasticache:DescribeReserved*",
           "elasticache:ListTagsForResource",
-          "elasticache:PurchaseReservedCacheNodesOffering",
+          # Removed read/write access - dpanofsky
+          # "elasticache:PurchaseReservedCacheNodesOffering",
           # ElasticSearch Reservations
           "es:DescribeReserved*",
           "es:ListTags",
-          "es:PurchaseReservedElasticsearchInstanceOffering",
-          "es:PurchaseReservedInstanceOffering",
+          # Removed read/write access - dpanofsky
+          # "es:PurchaseReservedElasticsearchInstanceOffering",
+          # "es:PurchaseReservedInstanceOffering",
           # memoryDB
           "memorydb:DescribeReserved*",
           "memorydb:ListTags",
-          "memorydb:PurchaseReservedNodesOffering",
+          # Removed read/write access - dpanofsky
+          # "memorydb:PurchaseReservedNodesOffering",
           # Saving Plans full management
-          "savingsplans:*",
+          # Removed read/write access - dpanofsky
+          # "savingsplans:*",
         ]
       },
       {
@@ -87,6 +95,13 @@ resource "aws_iam_role_policy" "inventory" {
           "sqs:ReceiveMessage",
           "rds-data:*",
         ]
+      },
+      # NOTE: added this to explicitly deny read access to S3 objects following pattern from other deny lists - dpanofsky
+      {
+        Sid      = "ExplicitDenyOnS3Files"
+        Effect   = "Deny"
+        Action   = ["s3:GetObject"]
+        Resource = ["arn:aws:s3:::*/*"]
       },
     ]
   })

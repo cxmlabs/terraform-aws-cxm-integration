@@ -12,12 +12,14 @@ This example demonstrates how to use the `terraform-aws-eks-cluster-enablement` 
 ## Usage
 
 1. Copy this example to a new directory:
+
    ```bash
    cp -r examples/basic my-eks-enablement
    cd my-eks-enablement
    ```
 
 2. Create a `terraform.tfvars` file with your specific values:
+
    ```hcl
    aws_region         = "us-west-2"
    cluster_name       = "my-production-cluster"
@@ -36,6 +38,7 @@ This example demonstrates how to use the `terraform-aws-eks-cluster-enablement` 
    ```
 
 3. Initialize and apply Terraform:
+
    ```bash
    terraform init
    terraform plan
@@ -62,12 +65,14 @@ After successful deployment, you'll see outputs including:
 You can verify the configuration by checking:
 
 ### For Access Entries (Modern Clusters)
+
 ```bash
 aws eks list-access-entries --cluster-name your-cluster-name
 aws eks describe-access-entry --cluster-name your-cluster-name --principal-arn arn:aws:iam::ACCOUNT:role/cxm-asset-crawler
 ```
 
 ### For aws-auth ConfigMap (Legacy Clusters)
+
 ```bash
 kubectl get configmap aws-auth -n kube-system -o yaml
 ```

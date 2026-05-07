@@ -45,17 +45,21 @@ resource "aws_iam_role_policy_attachment" "crawler_read_only_access_policy_attac
 
 # This is required in order to increase RI/Savings Plans quotas if need be
 resource "aws_iam_role_policy_attachment" "crawler_manage_ri_quotas_policy_attachment" {
-  count      = var.use_existing_iam_role_policy ? 0 : 1
-  role       = local.iam_role_name
-  policy_arn = "arn:aws:iam::aws:policy/ServiceQuotasFullAccess"
+  count = var.use_existing_iam_role_policy ? 0 : 1
+  role  = local.iam_role_name
+  # Changed to read only - dpanofsky
+  # policy_arn = "arn:aws:iam::aws:policy/ServiceQuotasFullAccess"
+  policy_arn = "arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess"
   depends_on = [module.cxm_cfg_iam_role]
 }
 
 # This is required in fully manage Savings Plans
 resource "aws_iam_role_policy_attachment" "crawler_manage_sp_policy_attachment" {
-  count      = var.use_existing_iam_role_policy ? 0 : 1
-  role       = local.iam_role_name
-  policy_arn = "arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess"
+  count = var.use_existing_iam_role_policy ? 0 : 1
+  role  = local.iam_role_name
+  # Changed to read only - dpanofsky
+  # policy_arn = "arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess"
+  policy_arn = "arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess"
   depends_on = [module.cxm_cfg_iam_role]
 }
 
@@ -73,8 +77,9 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
     sid = "ManageReportDefinitions"
     actions = [
       "cur:DescribeReportDefinitions",
-      "cur:ModifyReportDefinition",
-      "cur:PutReportDefinition",
+      # Removed read/write access - dpanofsky
+      # "cur:ModifyReportDefinition",
+      # "cur:PutReportDefinition",
       "cur:ListTagsForResource",
       "bcm-data-exports:List*",
       "bcm-data-exports:Get*",
@@ -107,7 +112,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       # DynamoDB Reservations
       "dynamodb:DescribeReservedCapacity",
       "dynamodb:DescribeReservedCapacityOfferings",
-      "dynamodb:PurchaseReservedCapacityOfferings",
+      # Removed read/write access - dpanofsky
+      # "dynamodb:PurchaseReservedCapacityOfferings",
       # EC2 Reservations
       "ec2:DescribeReserved*",
       "ec2:DescribeAvailabilityZones",
@@ -116,37 +122,45 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeTags",
       "ec2:GetReserved*",
-      "ec2:ModifyReservedInstances",
-      "ec2:PurchaseReservedInstancesOffering",
-      "ec2:CreateReservedInstancesListing",
-      "ec2:CancelReservedInstancesListing",
-      "ec2:GetReservedInstancesExchangeQuote",
-      "ec2:AcceptReservedInstancesExchangeQuote",
+      # Removed read/write access - dpanofsky
+      # "ec2:ModifyReservedInstances",
+      # "ec2:PurchaseReservedInstancesOffering",
+      # "ec2:CreateReservedInstancesListing",
+      # "ec2:CancelReservedInstancesListing",
+      # "ec2:GetReservedInstancesExchangeQuote",
+      # "ec2:AcceptReservedInstancesExchangeQuote",
       # RDS Reservations
       "rds:DescribeReserved*",
       "rds:ListTagsForResource*",
-      "rds:PurchaseReservedDBInstancesOffering",
+      # Removed read/write access - dpanofsky
+      # "rds:PurchaseReservedDBInstancesOffering",
       # Redshift Reservations
       "redshift:DescribeReserved*",
       "redshift:DescribeTags",
       "redshift:GetReserved*",
-      "redshift:AcceptReservedNodeExchange",
-      "redshift:PurchaseReservedNodeOffering",
+      # Removed read/write access - dpanofsky
+      # "redshift:AcceptReservedNodeExchange",
+      # "redshift:PurchaseReservedNodeOffering",
       # ElastiCache Reservations
       "elasticache:DescribeReserved*",
       "elasticache:ListTagsForResource",
-      "elasticache:PurchaseReservedCacheNodesOffering",
+      # Removed read/write access - dpanofsky
+      # "elasticache:PurchaseReservedCacheNodesOffering",
       # ElasticSearch Reservations
       "es:DescribeReserved*",
       "es:ListTags",
-      "es:PurchaseReservedElasticsearchInstanceOffering",
-      "es:PurchaseReservedInstanceOffering",
+      # Removed read/write access - dpanofsky
+      # "es:PurchaseReservedElasticsearchInstanceOffering",
+      # "es:PurchaseReservedInstanceOffering",
       # memoryDB
       "memorydb:DescribeReserved*",
       "memorydb:ListTags",
-      "memorydb:PurchaseReservedNodesOffering",
+      # Removed read/write access - dpanofsky
+      # "memorydb:PurchaseReservedNodesOffering",
       # Saving Plans full management
-      "savingsplans:*"
+      # Removed read/write access - dpanofsky
+      # NOTE: this should be handled by the policy attachment above - dpanofsky
+      # "savingsplans:*"
     ]
     resources = ["*"]
   }
@@ -167,6 +181,16 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
     resources = ["*"]
   }
 
+  # NOTE: added this to explicitly deny read access to S3 objects following pattern from other deny lists - dpanofsky
+  statement {
+    # Explicitly removing read access to S3 objects
+    sid     = "ExplicitDenyOnS3Files"
+    effect  = "Deny"
+    actions = ["s3:GetObject"]
+    # NOTE: reversed the flawed logic that combined deny with not_resources - dpanofsky
+    resources = ["arn:aws:s3:::*/*"]
+  }
+
   statement {
     # Explicitly deny to any action that may allow to access customer data
     sid    = "ExplicitDenyToDataPlane"
@@ -183,6 +207,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "ecr:BatchGetImage",
       "ecr:GetAuthorizationToken",
       "ecr:GetDownloadUrlForLayer",
+      # NOTE: added ecs:RegisterTaskDefinition to deny list following pattern from other deny lists- dpanofsky
+      "ecs:RegisterTaskDefinition",
       "kinesis:GetRecords",
       "kinesis:GetShardIterator",
       "lambda:GetFunction",
