@@ -132,8 +132,8 @@ To upgrade a legacy cluster to use access entries:
 
 | Name | Version |
 |------|---------|
-| aws | 6.13.0 |
-| kubernetes | 2.38.0 |
+| aws | >= 5.0 |
+| kubernetes | >= 2.20 |
 
 ### Modules
 
