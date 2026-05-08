@@ -78,6 +78,7 @@ Create a new directory and add the following files.
 **`provider.tf`** - Configure one provider per account/region:
 
 > **Region requirements:**
+>
 > - `aws.cur` **must** be in the **same region** as the CUR S3 bucket. The module creates S3 bucket notifications and EventBridge rules that only work in the bucket's region.
 > - `aws.root` can be any region. It determines where EventBridge rules for Organization change notifications are created. IAM roles are global and work regardless of region.
 
@@ -154,6 +155,7 @@ terraform output cxm_iam_role_name
 ```
 
 You can also verify in the AWS Console:
+
 - **IAM > Roles** in the management account: look for `cxm-organization-crawler`
 - **IAM > Roles** in the CUR account: look for `cxm-cur-reader`
 - **EventBridge > Rules** in the management account: look for rules prefixed with `cxm`
@@ -263,6 +265,7 @@ terraform output cxm_iam_role_name
 ```
 
 Verify in the AWS Console:
+
 - **IAM > Roles**: look for `cxm-organization-crawler`
 - **EventBridge > Rules**: look for rules prefixed with `cxm`
 
@@ -355,6 +358,7 @@ aws cloudformation list-stack-instances \
 ```
 
 Verify in member accounts:
+
 - **IAM > Roles**: look for `cxm-asset-crawler`
 - **EventBridge > Rules**: look for rules prefixed with `cxm`
 
@@ -487,6 +491,7 @@ terraform output -module=cxm_eks_enablement
 ```
 
 Check these outputs:
+
 - `access_method` - Shows whether access entries or aws-auth ConfigMap was used
 - `access_entry_created` - Should be `true` for modern clusters
 - `aws_auth_configmap_updated` - Should be `true` for legacy clusters
@@ -527,7 +532,7 @@ provider "aws" {
 }
 ```
 
-2. **Update the module** in `main.tf`:
+1. **Update the module** in `main.tf`:
 
 ```hcl
 module "cxm_integration" {
@@ -593,7 +598,7 @@ provider "aws" {
 }
 ```
 
-2. **Update the module** in `main.tf`:
+1. **Update the module** in `main.tf`:
 
 ```hcl
 module "cxm_integration" {
@@ -660,6 +665,7 @@ These variables can be added to any scenario above:
 | `flowlogs_bucket_name` | `null` | S3 bucket storing centralized VPC Flow Logs (required when Flow Logs analysis is enabled) |
 | `flowlogs_kms_key_arn` | `null` | KMS key ARN for encrypted Flow Logs data in S3 |
 | `enable_scheduling` | `false` | Enable scheduling and scaling permissions for FinOps cost optimization |
+
 ### Example with optional variables
 
 ```hcl
@@ -702,11 +708,13 @@ module "cxm_integration" {
 **What this does:** Deploys CXM asset-crawler roles into individual member accounts using **pure Terraform** — no CloudFormation StackSets. You write one module block per account.
 
 > **When to use this instead of StackSets:**
+>
 > - You want to avoid CloudFormation entirely
 > - You need per-account Terraform state and lifecycle control
 > - You want to selectively enable specific accounts rather than entire OUs
 >
 > **When to stick with StackSets (Sections 3/4):**
+>
 > - You want auto-deployment to new accounts as they join the organization
 > - You have 10+ accounts and don't want to manage individual module blocks
 
@@ -863,6 +871,7 @@ terraform output -module=cxm_sub_account_production
 ```
 
 Verify in member account consoles:
+
 - **IAM > Roles**: look for `cxm-asset-crawler`
 - **EventBridge > Rules**: look for `cxm-iam-change-notifier`
 

@@ -59,6 +59,7 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 | permission_boundary_arn | Optional - ARN of a policy that is used to contraint permissions boundary for the role. | `string` | `null` | no |
 | cxm_read_only_policy_name | The name of the policy used to enrich ReadOnly to allow Cloud ex Machina to read the Control Plane.  Defaults to cxm-account-ro-${random_id.uniq.hex} when empty. | `string` | `null` | no |
 | enable_scheduling | Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default. | `bool` | `false` | no |
+| enable_savings_modifications | Enable savings plan and RI modifications (purchase, modify, cancel, etc.). | `bool` | `true` | no |
 | tags | A map/dictionary of Tags to be assigned to created resources. | `map(string)` | `{}` | no |
 
 ### Outputs

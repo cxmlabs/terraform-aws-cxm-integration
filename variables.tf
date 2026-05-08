@@ -60,6 +60,12 @@ variable "enable_scheduling" {
   description = "Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default."
 }
 
+variable "enable_savings_modifications" {
+  type        = bool
+  default     = false
+  description = "Enable savings plan and RI modifications (purchase, modify, cancel, etc.)."
+}
+
 variable "disable_stackset_deployment" {
   type        = bool
   default     = false

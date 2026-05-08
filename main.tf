@@ -13,9 +13,10 @@ module "enable_root_organization" {
   cxm_external_id    = var.cxm_external_id
   prefix             = local.prefix
   # This role name will be prefixed by local.prefix when deployed
-  iam_role_name           = "organization-crawler${local.role_suffix}"
-  permission_boundary_arn = var.permission_boundary_arn
-  tags                    = local.tags
+  iam_role_name                = "organization-crawler${local.role_suffix}"
+  permission_boundary_arn      = var.permission_boundary_arn
+  enable_savings_modifications = var.enable_savings_modifications
+  tags                         = local.tags
 }
 
 module "enable_sub_accounts" {
@@ -51,10 +52,11 @@ module "enable_lone_account" {
   cxm_external_id    = var.cxm_external_id
   prefix             = local.prefix
   # This role name will be prefixed by local.prefix when deployed
-  iam_role_name           = "organization-crawler${local.role_suffix}"
-  permission_boundary_arn = var.permission_boundary_arn
-  enable_scheduling       = local.enable_scheduling
-  tags                    = local.tags
+  iam_role_name                = "organization-crawler${local.role_suffix}"
+  permission_boundary_arn      = var.permission_boundary_arn
+  enable_scheduling            = local.enable_scheduling
+  enable_savings_modifications = var.enable_savings_modifications
+  tags                         = local.tags
 }
 
 # COST USAGE REPORT
