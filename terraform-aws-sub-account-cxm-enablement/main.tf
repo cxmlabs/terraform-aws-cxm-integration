@@ -1,3 +1,5 @@
+data "aws_organizations_organization" "current" {}
+
 ################################################################
 #
 # Asset Crawler IAM Role
