@@ -15,6 +15,7 @@ module "enable_root_organization" {
   # This role name will be prefixed by local.prefix when deployed
   iam_role_name                = "organization-crawler${local.role_suffix}"
   permission_boundary_arn      = var.permission_boundary_arn
+  disable_stackset_deployment  = var.disable_stackset_deployment
   enable_savings_modifications = var.enable_savings_modifications
   tags                         = local.tags
 }

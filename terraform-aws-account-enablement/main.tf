@@ -51,8 +51,10 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
   statement {
     sid = "CommitmentMonitoringPermissions"
     actions = [
+      # DynamoDB Reservations
       "dynamodb:DescribeReservedCapacity",
       "dynamodb:DescribeReservedCapacityOfferings",
+      # EC2 Reservations
       "ec2:DescribeReserved*",
       "ec2:DescribeAvailabilityZones",
       "ec2:DescribeAccountAttributes",
@@ -61,17 +63,27 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeTags",
       "ec2:GetReserved*",
+      # RDS Reservations
       "rds:DescribeReserved*",
       "rds:ListTagsForResource*",
+      # Redshift Reservations
       "redshift:DescribeReserved*",
       "redshift:DescribeTags",
       "redshift:GetReserved*",
+      # ElastiCache Reservations
       "elasticache:DescribeReserved*",
       "elasticache:ListTagsForResource",
+      # ElasticSearch Reservations
       "es:DescribeReserved*",
-      "es:ListTags",
+      # memoryDB
       "memorydb:DescribeReserved*",
+      "es:ListTags",
+      # memoryDB
       "memorydb:ListTags",
+      # Saving Plans read only access
+      # - savingsplans:Describe*
+      # - savingsplans:List*
+      # NOTE: this is handled by the `arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess` policy attached above - dpanofsky
     ]
     resources = ["*"]
   }
@@ -121,20 +133,30 @@ data "aws_iam_policy_document" "cxm_savings_modifications_policy" {
   statement {
     sid = "CommitmentManagementPermissions"
     actions = [
+      # DynamoDB Reservations
       "dynamodb:PurchaseReservedCapacityOfferings",
+      # EC2 Reservations
       "ec2:ModifyReservedInstances",
       "ec2:PurchaseReservedInstancesOffering",
       "ec2:CreateReservedInstancesListing",
       "ec2:CancelReservedInstancesListing",
       "ec2:GetReservedInstancesExchangeQuote",
       "ec2:AcceptReservedInstancesExchangeQuote",
+      # RDS Reservations
       "rds:PurchaseReservedDBInstancesOffering",
+      # Redshift Reservations
       "redshift:AcceptReservedNodeExchange",
       "redshift:PurchaseReservedNodeOffering",
+      # ElastiCache Reservations
       "elasticache:PurchaseReservedCacheNodesOffering",
+      # ElasticSearch Reservations
       "es:PurchaseReservedElasticsearchInstanceOffering",
       "es:PurchaseReservedInstanceOffering",
+      # memoryDB
       "memorydb:PurchaseReservedNodesOffering",
+      # Saving Plans full management
+      # - savingsplans:*
+      # NOTE: this is handled by the `arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess` policy attached above - dpanofsky
     ]
     resources = ["*"]
   }

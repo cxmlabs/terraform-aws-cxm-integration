@@ -72,7 +72,7 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 | cxm_read_only_policy_name | The name of the policy used to authorize Cloud ex Machina to read the AWS Organizations API.  Defaults to cxm-organizations-ro-${random_id.uniq.hex} when empty. | `string` | `null` | no |
 | tags | A map of K:V pairs to use as tags on all resources. | `map(string)` | `{}` | no |
 | enable_savings_modifications | Enable savings plan and RI modifications (purchase, modify, cancel, etc.). Setting this to true to preserve existing behavior. | `bool` | `true` | no |
-| disable_stackset_deployment | Propagate the disable_stackset_deployment variable to the terraform-aws-sub-account-cxm-enablement module. Disable CloudFormation StackSet deployment to member accounts. Set to true when using the terraform-aws-sub-account-cxm-enablement module instead. False by default. | `bool` | `false` | no |
+| disable_stackset_deployment | Disable the CloudWatch Event rule that monitors CloudFormation StackSet status changes. Set to true if using StackSets instead of the terraform-aws-sub-account-cxm-enablement module. False by default to preserve existing behavior. | `bool` | `false` | no |
 
 ### Outputs
 

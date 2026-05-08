@@ -63,5 +63,5 @@ variable "enable_savings_modifications" {
 variable "disable_stackset_deployment" {
   type        = bool
   default     = false
-  description = "Propagate the disable_stackset_deployment variable to the terraform-aws-sub-account-cxm-enablement module. Disable CloudFormation StackSet deployment to member accounts. Set to true when using the terraform-aws-sub-account-cxm-enablement module instead. False by default."
+  description = "Disable the CloudWatch Event rule that monitors CloudFormation StackSet status changes. Set to true if using StackSets instead of the terraform-aws-sub-account-cxm-enablement module. False by default to preserve existing behavior."
 }
