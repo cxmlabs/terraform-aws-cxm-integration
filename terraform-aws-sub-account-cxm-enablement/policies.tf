@@ -146,26 +146,35 @@ data "aws_iam_policy_document" "scheduling_policy" {
     sid       = "SchedulingPermissions"
     resources = ["*"]
     actions = [
+      # ECS Scaling
       "ecs:UpdateService",
+      # EC2 Stop/Start
       "ec2:StartInstances",
       "ec2:StopInstances",
+      # RDS Stop/Start
       "rds:StartDBInstance",
       "rds:StopDBInstance",
       "rds:StartDBCluster",
       "rds:StopDBCluster",
+      # Lambda Concurrency
       "lambda:PutProvisionedConcurrencyConfig",
       "lambda:DeleteProvisionedConcurrencyConfig",
       "lambda:PutFunctionConcurrency",
       "lambda:DeleteFunctionConcurrency",
+      # EKS Nodegroup Scaling
       "eks:UpdateNodegroupConfig",
+      # ASG Scaling
       "autoscaling:UpdateAutoScalingGroup",
       "autoscaling:SetDesiredCapacity",
       "application-autoscaling:RegisterScalableTarget",
+      # ElastiCache Scaling
       "elasticache:ModifyReplicationGroup",
       "elasticache:ModifyCacheCluster",
+      # Redshift Scaling
       "redshift:PauseCluster",
       "redshift:ResumeCluster",
       "redshift:ResizeCluster",
+      # SageMaker Scaling
       "sagemaker:UpdateEndpointWeightsAndCapacities",
     ]
   }
