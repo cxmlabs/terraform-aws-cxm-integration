@@ -20,7 +20,7 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 
 | Name | Version |
 |------|---------|
-| aws | >= 3.74.0 |
+| aws | 6.44.0 |
 
 ### Modules
 
@@ -44,6 +44,7 @@ No modules.
 | prefix | Prefix to use for all resources created by this module. | `string` | `"cxm"` | no |
 | stack_and_role_suffix | Suffix to use for the cloudformation stack. | `string` | `null` | no |
 | enable_scheduling | Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default. | `bool` | `false` | no |
+| disable_stackset_deployment | Disable CloudFormation StackSet deployment to member accounts. Set to true when using the terraform-aws-sub-account-cxm-enablement module instead. False by default. | `bool` | `false` | no |
 
 ### Outputs
 

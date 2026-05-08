@@ -45,21 +45,17 @@ resource "aws_iam_role_policy_attachment" "crawler_read_only_access_policy_attac
 
 # This is required in order to increase RI/Savings Plans quotas if need be
 resource "aws_iam_role_policy_attachment" "crawler_manage_ri_quotas_policy_attachment" {
-  count = var.use_existing_iam_role_policy ? 0 : 1
-  role  = local.iam_role_name
-  # Changed to read only - dpanofsky
-  # policy_arn = "arn:aws:iam::aws:policy/ServiceQuotasFullAccess"
-  policy_arn = "arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess"
+  count      = var.use_existing_iam_role_policy ? 0 : 1
+  role       = local.iam_role_name
+  policy_arn = var.enable_savings_modifications ? "arn:aws:iam::aws:policy/ServiceQuotasFullAccess" : "arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess"
   depends_on = [module.cxm_cfg_iam_role]
 }
 
 # This is required in fully manage Savings Plans
 resource "aws_iam_role_policy_attachment" "crawler_manage_sp_policy_attachment" {
-  count = var.use_existing_iam_role_policy ? 0 : 1
-  role  = local.iam_role_name
-  # Changed to read only - dpanofsky
-  # policy_arn = "arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess"
-  policy_arn = "arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess"
+  count      = var.use_existing_iam_role_policy ? 0 : 1
+  role       = local.iam_role_name
+  policy_arn = var.enable_savings_modifications ? "arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess" : "arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess"
   depends_on = [module.cxm_cfg_iam_role]
 }
 
@@ -75,11 +71,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
   statement {
     # Describing CUR Data Exports / Reports to decide on which one to use
     sid = "ManageReportDefinitions"
-    actions = [
+    actions = concat([
       "cur:DescribeReportDefinitions",
-      # Removed read/write access - dpanofsky
-      # "cur:ModifyReportDefinition",
-      # "cur:PutReportDefinition",
       "cur:ListTagsForResource",
       "bcm-data-exports:List*",
       "bcm-data-exports:Get*",
@@ -91,7 +84,11 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "ce:List*",
       "ec2:DescribeRegions",
       "ec2:DescribeAccountAttributes",
-    ]
+      ],
+      var.enable_savings_modifications ? [
+        "cur:ModifyReportDefinition",
+        "cur:PutReportDefinition",
+    ] : [])
     resources = ["*"]
   }
 
@@ -108,12 +105,10 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
   statement {
     # Understand configuration and enrollment of accounts into financial optimizations
     sid = "CommitmentManagementPermissions"
-    actions = [
+    actions = concat([
       # DynamoDB Reservations
       "dynamodb:DescribeReservedCapacity",
       "dynamodb:DescribeReservedCapacityOfferings",
-      # Removed read/write access - dpanofsky
-      # "dynamodb:PurchaseReservedCapacityOfferings",
       # EC2 Reservations
       "ec2:DescribeReserved*",
       "ec2:DescribeAvailabilityZones",
@@ -122,46 +117,53 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeTags",
       "ec2:GetReserved*",
-      # Removed read/write access - dpanofsky
-      # "ec2:ModifyReservedInstances",
-      # "ec2:PurchaseReservedInstancesOffering",
-      # "ec2:CreateReservedInstancesListing",
-      # "ec2:CancelReservedInstancesListing",
-      # "ec2:GetReservedInstancesExchangeQuote",
-      # "ec2:AcceptReservedInstancesExchangeQuote",
       # RDS Reservations
       "rds:DescribeReserved*",
       "rds:ListTagsForResource*",
-      # Removed read/write access - dpanofsky
-      # "rds:PurchaseReservedDBInstancesOffering",
       # Redshift Reservations
       "redshift:DescribeReserved*",
       "redshift:DescribeTags",
       "redshift:GetReserved*",
-      # Removed read/write access - dpanofsky
-      # "redshift:AcceptReservedNodeExchange",
-      # "redshift:PurchaseReservedNodeOffering",
       # ElastiCache Reservations
       "elasticache:DescribeReserved*",
       "elasticache:ListTagsForResource",
-      # Removed read/write access - dpanofsky
-      # "elasticache:PurchaseReservedCacheNodesOffering",
       # ElasticSearch Reservations
       "es:DescribeReserved*",
       "es:ListTags",
-      # Removed read/write access - dpanofsky
-      # "es:PurchaseReservedElasticsearchInstanceOffering",
-      # "es:PurchaseReservedInstanceOffering",
       # memoryDB
       "memorydb:DescribeReserved*",
       "memorydb:ListTags",
-      # Removed read/write access - dpanofsky
-      # "memorydb:PurchaseReservedNodesOffering",
       # Saving Plans full management
-      # Removed read/write access - dpanofsky
       # NOTE: this should be handled by the policy attachment above - dpanofsky
       # "savingsplans:*"
-    ]
+      ],
+      var.enable_savings_modifications ? [
+        # DynamoDB Reservations
+        "dynamodb:PurchaseReservedCapacityOfferings",
+        # EC2 Reservations
+        "ec2:ModifyReservedInstances",
+        "ec2:PurchaseReservedInstancesOffering",
+        "ec2:CreateReservedInstancesListing",
+        "ec2:CancelReservedInstancesListing",
+        "ec2:GetReservedInstancesExchangeQuote",
+        "ec2:AcceptReservedInstancesExchangeQuote",
+        # RDS Reservations
+        "rds:PurchaseReservedDBInstancesOffering",
+        # Redshift Reservations
+        "redshift:AcceptReservedNodeExchange",
+        "redshift:PurchaseReservedNodeOffering",
+        # ElastiCache Reservations
+        "elasticache:PurchaseReservedCacheNodesOffering",
+        # ElasticSearch Reservations
+        "es:PurchaseReservedElasticsearchInstanceOffering",
+        "es:PurchaseReservedInstanceOffering",
+        # memoryDB
+        "memorydb:PurchaseReservedNodesOffering",
+        # Saving Plans full management
+        # NOTE: this should be handled by the policy attachment above - dpanofsky
+        # "savingsplans:*"
+    ] : [])
+
     resources = ["*"]
   }
 
@@ -359,6 +361,7 @@ resource "aws_cloudwatch_event_target" "cxm_organization_access_event_target" {
 #
 ################################################################
 resource "aws_cloudwatch_event_rule" "cxm_organization_cloudformation_rule" {
+  count       = var.disable_stackset_deployment ? 0 : 1
   name        = "${var.prefix}-organization-cloudformation-${random_id.uniq.hex}"
   description = "Notifies when the StackSet used to deploy an account is updated"
 
@@ -391,7 +394,8 @@ resource "aws_cloudwatch_event_rule" "cxm_organization_cloudformation_rule" {
 }
 
 resource "aws_cloudwatch_event_target" "cxm_organization_cloudformation_event_target" {
-  rule      = aws_cloudwatch_event_rule.cxm_organization_cloudformation_rule.name
+  count     = var.disable_stackset_deployment ? 0 : 1
+  rule      = aws_cloudwatch_event_rule.cxm_organization_cloudformation_rule[0].name
   target_id = "SendToControlPlaneBus"
   arn       = "arn:aws:events:${data.aws_region.current.name}:${var.cxm_aws_account_id}:event-bus/control-plane"
   role_arn  = aws_iam_role.cxm_feedback_loop_iam_role.arn

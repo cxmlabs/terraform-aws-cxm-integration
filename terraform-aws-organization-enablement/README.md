@@ -67,8 +67,9 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 | iam_role_name | The IAM role name. Required to match with iam_role_arn if use_existing_iam_role is set to `true`. Note tht this name will be prefixed when left empty | `string` | `"organization-crawler"` | no |
 | permission_boundary_arn | Optional - ARN of the policy that is used to set the permissions boundary for the role. | `string` | `null` | no |
 | cxm_read_only_policy_name | The name of the policy used to authorize Cloud ex Machina to read the AWS Organizations API.  Defaults to cxm-organizations-ro-${random_id.uniq.hex} when empty. | `string` | `null` | no |
-| enable_savings_modifications | Enable savings plan and RI modifications (purchase, modify, cancel, etc.). | `bool` | `false` | no |
 | tags | A map of K:V pairs to use as tags on all resources. | `map(string)` | `{}` | no |
+| enable_savings_modifications | Enable savings plan and RI modifications (purchase, modify, cancel, etc.). | `bool` | `false` | no |
+| disable_stackset_deployment | Disable CloudFormation StackSet deployment to member accounts. Set to true when using the terraform-aws-sub-account-cxm-enablement module instead. False by default. | `bool` | `false` | no |
 
 ### Outputs
 

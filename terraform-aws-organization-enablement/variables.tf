@@ -53,3 +53,15 @@ variable "tags" {
   description = "A map of K:V pairs to use as tags on all resources."
   default     = {}
 }
+
+variable "enable_savings_modifications" {
+  type        = bool
+  default     = false
+  description = "Enable savings plan and RI modifications (purchase, modify, cancel, etc.)."
+}
+
+variable "disable_stackset_deployment" {
+  type        = bool
+  default     = false
+  description = "Disable CloudFormation StackSet deployment to member accounts. Set to true when using the terraform-aws-sub-account-cxm-enablement module instead. False by default."
+}
