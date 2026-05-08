@@ -28,13 +28,14 @@ module "enable_sub_accounts" {
     aws = aws.root
   }
 
-  prefix                = local.prefix
-  cxm_aws_account_id    = var.cxm_aws_account_id
-  cxm_external_id       = var.cxm_external_id
-  deployment_targets    = var.deployment_targets
-  cxm_admin_role_arn    = module.enable_root_organization[0].iam_role_arn
-  stack_and_role_suffix = var.role_suffix
-  enable_scheduling     = local.enable_scheduling
+  prefix                       = local.prefix
+  cxm_aws_account_id           = var.cxm_aws_account_id
+  cxm_external_id              = var.cxm_external_id
+  deployment_targets           = var.deployment_targets
+  cxm_admin_role_arn           = module.enable_root_organization[0].iam_role_arn
+  stack_and_role_suffix        = var.role_suffix
+  enable_scheduling            = local.enable_scheduling
+  enable_savings_modifications = var.enable_savings_modifications
   #tags                 = var.tags
 }
 

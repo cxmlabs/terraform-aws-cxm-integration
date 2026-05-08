@@ -43,7 +43,7 @@ resource "aws_iam_role_policy_attachment" "crawler_read_only_access_policy_attac
   depends_on = [module.cxm_cfg_iam_role]
 }
 
-# This is required in order to increase RI/Savings Plans quotas if need be
+# This is required in order to monitor and/or increase RI/Savings Plans quotas if need be
 resource "aws_iam_role_policy_attachment" "crawler_manage_ri_quotas_policy_attachment" {
   count      = var.use_existing_iam_role_policy ? 0 : 1
   role       = local.iam_role_name
@@ -51,7 +51,7 @@ resource "aws_iam_role_policy_attachment" "crawler_manage_ri_quotas_policy_attac
   depends_on = [module.cxm_cfg_iam_role]
 }
 
-# This is required in fully manage Savings Plans
+# This is required in order to monitor and/or fully manage Savings Plans
 resource "aws_iam_role_policy_attachment" "crawler_manage_sp_policy_attachment" {
   count      = var.use_existing_iam_role_policy ? 0 : 1
   role       = local.iam_role_name
@@ -70,8 +70,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
 
   statement {
     # Describing CUR Data Exports / Reports to decide on which one to use
-    sid = "ManageReportDefinitions"
-    actions = concat([
+    sid = "MonitorReportDefinitions"
+    actions = [
       "cur:DescribeReportDefinitions",
       "cur:ListTagsForResource",
       "bcm-data-exports:List*",
@@ -84,12 +84,7 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "ce:List*",
       "ec2:DescribeRegions",
       "ec2:DescribeAccountAttributes",
-      ],
-      var.enable_savings_modifications ? [
-        "cur:ModifyReportDefinition",
-        "cur:PutReportDefinition",
-      ] : []
-    )
+    ]
     resources = ["*"]
   }
 
@@ -105,8 +100,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
 
   statement {
     # Understand configuration and enrollment of accounts into financial optimizations
-    sid = "CommitmentManagementPermissions"
-    actions = concat([
+    sid = "CommitmentMonitoringPermissions"
+    actions = [
       # DynamoDB Reservations
       "dynamodb:DescribeReservedCapacity",
       "dynamodb:DescribeReservedCapacityOfferings",
@@ -134,37 +129,11 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       # memoryDB
       "memorydb:DescribeReserved*",
       "memorydb:ListTags",
-      # Saving Plans full management
-      # NOTE: this should be handled by the policy attachment above - dpanofsky
-      # "savingsplans:*"
-      ],
-      var.enable_savings_modifications ? [
-        # DynamoDB Reservations
-        "dynamodb:PurchaseReservedCapacityOfferings",
-        # EC2 Reservations
-        "ec2:ModifyReservedInstances",
-        "ec2:PurchaseReservedInstancesOffering",
-        "ec2:CreateReservedInstancesListing",
-        "ec2:CancelReservedInstancesListing",
-        "ec2:GetReservedInstancesExchangeQuote",
-        "ec2:AcceptReservedInstancesExchangeQuote",
-        # RDS Reservations
-        "rds:PurchaseReservedDBInstancesOffering",
-        # Redshift Reservations
-        "redshift:AcceptReservedNodeExchange",
-        "redshift:PurchaseReservedNodeOffering",
-        # ElastiCache Reservations
-        "elasticache:PurchaseReservedCacheNodesOffering",
-        # ElasticSearch Reservations
-        "es:PurchaseReservedElasticsearchInstanceOffering",
-        "es:PurchaseReservedInstanceOffering",
-        # memoryDB
-        "memorydb:PurchaseReservedNodesOffering",
-        # Saving Plans full management
-        # NOTE: this should be handled by the policy attachment above - dpanofsky
-        # "savingsplans:*"
-      ] : []
-    )
+      # Saving Plans read only access
+      # NOTE: this is handled by the `arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess` policy attached above - dpanofsky
+      # "savingsplans:Describe*",
+      # "savingsplans:List*"
+    ]
 
     resources = ["*"]
   }
@@ -247,6 +216,68 @@ resource "aws_iam_role_policy_attachment" "cxm_organization_read_only_policy_att
   count      = var.use_existing_iam_role_policy ? 0 : 1
   role       = local.iam_role_name
   policy_arn = aws_iam_policy.cxm_organization_read_only_policy[0].arn
+  depends_on = [module.cxm_cfg_iam_role]
+}
+
+data "aws_iam_policy_document" "cxm_organization_savings_modifications_policy" {
+  count   = var.use_existing_iam_role_policy || !var.enable_savings_modifications ? 0 : 1
+  version = "2012-10-17"
+
+  statement {
+    # Describing CUR Data Exports / Reports to decide on which one to use
+    sid = "ManageReportDefinitions"
+    actions = [
+      "cur:ModifyReportDefinition",
+      "cur:PutReportDefinition",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    # Understand configuration and enrollment of accounts into financial optimizations
+    sid = "CommitmentManagementPermissions"
+    actions = [
+      # DynamoDB Reservations
+      "dynamodb:PurchaseReservedCapacityOfferings",
+      # EC2 Reservations
+      "ec2:ModifyReservedInstances",
+      "ec2:PurchaseReservedInstancesOffering",
+      "ec2:CreateReservedInstancesListing",
+      "ec2:CancelReservedInstancesListing",
+      "ec2:GetReservedInstancesExchangeQuote",
+      "ec2:AcceptReservedInstancesExchangeQuote",
+      # RDS Reservations
+      "rds:PurchaseReservedDBInstancesOffering",
+      # Redshift Reservations
+      "redshift:AcceptReservedNodeExchange",
+      "redshift:PurchaseReservedNodeOffering",
+      # ElastiCache Reservations
+      "elasticache:PurchaseReservedCacheNodesOffering",
+      # ElasticSearch Reservations
+      "es:PurchaseReservedElasticsearchInstanceOffering",
+      "es:PurchaseReservedInstanceOffering",
+      # memoryDB
+      "memorydb:PurchaseReservedNodesOffering",
+      # Saving Plans full management
+      # NOTE: this is handled by the `arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess` policy attached above - dpanofsky
+      # "savingsplans:*"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "cxm_organization_savings_modifications_policy" {
+  count       = var.use_existing_iam_role_policy || !var.enable_savings_modifications ? 0 : 1
+  name        = "${var.prefix}-savings-modifications-policy-${random_id.uniq.hex}"
+  description = "Policy allowing Cloud ex Machina to manage savings plans and RI modifications"
+  policy      = data.aws_iam_policy_document.cxm_organization_savings_modifications_policy[0].json
+  tags        = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "cxm_organization_savings_modifications_policy_attachment" {
+  count      = var.use_existing_iam_role_policy || !var.enable_savings_modifications ? 0 : 1
+  role       = local.iam_role_name
+  policy_arn = aws_iam_policy.cxm_organization_savings_modifications_policy[0].arn
   depends_on = [module.cxm_cfg_iam_role]
 }
 

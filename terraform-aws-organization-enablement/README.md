@@ -42,17 +42,20 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 | [aws_cloudwatch_event_target.cxm_organization_cloudformation_event_target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
 | [aws_iam_policy.cxm_cross_account_eventbridge_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.cxm_organization_read_only_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.cxm_organization_savings_modifications_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.cxm_feedback_loop_iam_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.crawler_manage_ri_quotas_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.crawler_manage_sp_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.crawler_read_only_access_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.cxm_cross_account_eventbridge_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.cxm_organization_read_only_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.cxm_organization_savings_modifications_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.organization_read_only_access_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [random_id.uniq](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 | [aws_iam_policy_document.cxm_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cxm_cross_account_eventbridge_put_events](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cxm_organization_read_only_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.cxm_organization_savings_modifications_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 
 ### Inputs
@@ -68,7 +71,7 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 | permission_boundary_arn | Optional - ARN of the policy that is used to set the permissions boundary for the role. | `string` | `null` | no |
 | cxm_read_only_policy_name | The name of the policy used to authorize Cloud ex Machina to read the AWS Organizations API.  Defaults to cxm-organizations-ro-${random_id.uniq.hex} when empty. | `string` | `null` | no |
 | tags | A map of K:V pairs to use as tags on all resources. | `map(string)` | `{}` | no |
-| enable_savings_modifications | Enable savings plan and RI modifications (purchase, modify, cancel, etc.). | `bool` | `false` | no |
+| enable_savings_modifications | Enable savings plan and RI modifications (purchase, modify, cancel, etc.). Setting this to true to preserve existing behavior. | `bool` | `true` | no |
 | disable_stackset_deployment | Propagate the disable_stackset_deployment variable to the terraform-aws-sub-account-cxm-enablement module. Disable CloudFormation StackSet deployment to member accounts. Set to true when using the terraform-aws-sub-account-cxm-enablement module instead. False by default. | `bool` | `false` | no |
 
 ### Outputs

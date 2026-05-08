@@ -49,13 +49,10 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
   version = "2012-10-17"
 
   statement {
-    # Understand configuration and enrollment of accounts into financial optimizations
-    sid = "CommitmentManagementPermissions"
-    actions = concat([
-      # DynamoDB Reservations
+    sid = "CommitmentMonitoringPermissions"
+    actions = [
       "dynamodb:DescribeReservedCapacity",
       "dynamodb:DescribeReservedCapacityOfferings",
-      # EC2 Reservations
       "ec2:DescribeReserved*",
       "ec2:DescribeAvailabilityZones",
       "ec2:DescribeAccountAttributes",
@@ -64,49 +61,18 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeTags",
       "ec2:GetReserved*",
-      # RDS Reservations
       "rds:DescribeReserved*",
       "rds:ListTagsForResource*",
-      # Redshift Reservations
       "redshift:DescribeReserved*",
       "redshift:DescribeTags",
       "redshift:GetReserved*",
-      # ElastiCache Reservations
       "elasticache:DescribeReserved*",
       "elasticache:ListTagsForResource",
-      # ElasticSearch Reservations
       "es:DescribeReserved*",
       "es:ListTags",
-      # memoryDB
       "memorydb:DescribeReserved*",
       "memorydb:ListTags",
-      ],
-      var.enable_savings_modifications ? [
-        # DynamoDB Reservations
-        "dynamodb:PurchaseReservedCapacityOfferings",
-        # EC2 Reservations
-        "ec2:ModifyReservedInstances",
-        "ec2:PurchaseReservedInstancesOffering",
-        "ec2:CreateReservedInstancesListing",
-        "ec2:CancelReservedInstancesListing",
-        "ec2:GetReservedInstancesExchangeQuote",
-        "ec2:AcceptReservedInstancesExchangeQuote",
-        # RDS Reservations
-        "rds:PurchaseReservedDBInstancesOffering",
-        # Redshift Reservations
-        "redshift:AcceptReservedNodeExchange",
-        "redshift:PurchaseReservedNodeOffering",
-        # ElastiCache Reservations
-        "elasticache:PurchaseReservedCacheNodesOffering",
-        # ElasticSearch Reservations
-        "es:PurchaseReservedElasticsearchInstanceOffering",
-        "es:PurchaseReservedInstanceOffering",
-        # memoryDB
-        "memorydb:PurchaseReservedNodesOffering",
-        # Saving Plans full management
-        # NOTE: this should be handled by the policy attachment above - dpanofsky
-        # "savingsplans:*"
-    ] : [])
+    ]
     resources = ["*"]
   }
 
@@ -148,6 +114,32 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
   }
 }
 
+data "aws_iam_policy_document" "cxm_savings_modifications_policy" {
+  count   = var.use_existing_iam_role_policy || !var.enable_savings_modifications ? 0 : 1
+  version = "2012-10-17"
+
+  statement {
+    sid = "CommitmentManagementPermissions"
+    actions = [
+      "dynamodb:PurchaseReservedCapacityOfferings",
+      "ec2:ModifyReservedInstances",
+      "ec2:PurchaseReservedInstancesOffering",
+      "ec2:CreateReservedInstancesListing",
+      "ec2:CancelReservedInstancesListing",
+      "ec2:GetReservedInstancesExchangeQuote",
+      "ec2:AcceptReservedInstancesExchangeQuote",
+      "rds:PurchaseReservedDBInstancesOffering",
+      "redshift:AcceptReservedNodeExchange",
+      "redshift:PurchaseReservedNodeOffering",
+      "elasticache:PurchaseReservedCacheNodesOffering",
+      "es:PurchaseReservedElasticsearchInstanceOffering",
+      "es:PurchaseReservedInstanceOffering",
+      "memorydb:PurchaseReservedNodesOffering",
+    ]
+    resources = ["*"]
+  }
+}
+
 resource "aws_iam_policy" "cxm_read_only_policy" {
   count       = var.use_existing_iam_role_policy ? 0 : 1
   name        = local.cxm_read_only_policy_name
@@ -156,10 +148,25 @@ resource "aws_iam_policy" "cxm_read_only_policy" {
   tags        = var.tags
 }
 
+resource "aws_iam_policy" "cxm_savings_modifications_policy" {
+  count       = var.use_existing_iam_role_policy || !var.enable_savings_modifications ? 0 : 1
+  name        = "${var.prefix}-savings-modifications-policy-${random_id.uniq.hex}"
+  description = "Policy allowing Cloud ex Machina to manage RI and commitment modifications"
+  policy      = data.aws_iam_policy_document.cxm_savings_modifications_policy[0].json
+  tags        = var.tags
+}
+
 resource "aws_iam_role_policy_attachment" "cxm_read_only_policy_attachment" {
   count      = var.use_existing_iam_role_policy ? 0 : 1
   role       = local.iam_role_name
   policy_arn = aws_iam_policy.cxm_read_only_policy[0].arn
+  depends_on = [module.cxm_cfg_iam_role]
+}
+
+resource "aws_iam_role_policy_attachment" "cxm_savings_modifications_policy_attachment" {
+  count      = var.use_existing_iam_role_policy || !var.enable_savings_modifications ? 0 : 1
+  role       = local.iam_role_name
+  policy_arn = aws_iam_policy.cxm_savings_modifications_policy[0].arn
   depends_on = [module.cxm_cfg_iam_role]
 }
 

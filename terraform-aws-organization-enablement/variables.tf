@@ -56,8 +56,8 @@ variable "tags" {
 
 variable "enable_savings_modifications" {
   type        = bool
-  default     = false
-  description = "Enable savings plan and RI modifications (purchase, modify, cancel, etc.)."
+  default     = true
+  description = "Enable savings plan and RI modifications (purchase, modify, cancel, etc.). Setting this to true to preserve existing behavior."
 }
 
 variable "disable_stackset_deployment" {

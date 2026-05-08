@@ -20,7 +20,7 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 
 | Name | Version |
 |------|---------|
-| aws | >= 3.74.0 |
+| aws | 6.44.0 |
 
 ### Modules
 
@@ -32,6 +32,7 @@ No modules.
 |------|------|
 | [aws_cloudformation_stack_set.cxm_account_enablement](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudformation_stack_set) | resource |
 | [aws_cloudformation_stack_set_instance.cxm_account_enablement](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudformation_stack_set_instance) | resource |
+| [aws_organizations_organization.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/organizations_organization) | data source |
 
 ### Inputs
 
@@ -44,6 +45,7 @@ No modules.
 | prefix | Prefix to use for all resources created by this module. | `string` | `"cxm"` | no |
 | stack_and_role_suffix | Suffix to use for the cloudformation stack. | `string` | `null` | no |
 | enable_scheduling | Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default. | `bool` | `false` | no |
+| enable_savings_modifications | Enable savings plan and RI modifications (purchase, modify, cancel, etc.). Setting this to true to preserve existing behavior. | `bool` | `true` | no |
 
 ### Outputs
 
