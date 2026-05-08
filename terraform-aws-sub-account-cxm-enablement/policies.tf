@@ -1,8 +1,6 @@
 ################################################################
 #
-# Inventory Policy (asset discovery + commitment management)
-# Mirrors terraform-aws-organization-enablement: base policy (describe + denies)
-# plus a separate inline policy when enable_savings_modifications is true.
+# Inventory Policy (asset discovery + optional commitment management when enable_savings_modifications is true)
 #
 ################################################################
 
@@ -40,6 +38,10 @@ data "aws_iam_policy_document" "inventory_policy" {
       # memoryDB
       "memorydb:DescribeReserved*",
       "memorydb:ListTags",
+      # Saving Plans read only access
+      # - savingsplans:Describe*
+      # - savingsplans:List*
+      # NOTE: this is handled by the `arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess` policy attached separately - dpanofsky
     ]
     resources = ["*"]
   }
@@ -86,20 +88,30 @@ data "aws_iam_policy_document" "inventory_savings_modifications_policy" {
   statement {
     sid = "CommitmentManagementPermissions"
     actions = [
+      # DynamoDB Reservations
       "dynamodb:PurchaseReservedCapacityOfferings",
+      # EC2 Reservations
       "ec2:ModifyReservedInstances",
       "ec2:PurchaseReservedInstancesOffering",
       "ec2:CreateReservedInstancesListing",
       "ec2:CancelReservedInstancesListing",
       "ec2:GetReservedInstancesExchangeQuote",
       "ec2:AcceptReservedInstancesExchangeQuote",
+      # RDS Reservations
       "rds:PurchaseReservedDBInstancesOffering",
+      # Redshift Reservations
       "redshift:AcceptReservedNodeExchange",
       "redshift:PurchaseReservedNodeOffering",
+      # ElastiCache Reservations
       "elasticache:PurchaseReservedCacheNodesOffering",
+      # ElasticSearch Reservations
       "es:PurchaseReservedElasticsearchInstanceOffering",
       "es:PurchaseReservedInstanceOffering",
+      # memoryDB
       "memorydb:PurchaseReservedNodesOffering",
+      # Saving Plans full management
+      # - savingsplans:*
+      # NOTE: this is handled by the `arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess` policy attached separately - dpanofsky
     ]
     resources = ["*"]
   }
