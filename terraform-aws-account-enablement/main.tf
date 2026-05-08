@@ -49,6 +49,7 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
   version = "2012-10-17"
 
   statement {
+    # Understand configuration and enrollment of accounts into financial optimizations
     sid = "CommitmentMonitoringPermissions"
     actions = [
       # DynamoDB Reservations
@@ -75,9 +76,9 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
       "elasticache:ListTagsForResource",
       # ElasticSearch Reservations
       "es:DescribeReserved*",
+      "es:ListTags",
       # memoryDB
       "memorydb:DescribeReserved*",
-      "es:ListTags",
       # memoryDB
       "memorydb:ListTags",
       # Saving Plans read only access
@@ -131,6 +132,7 @@ data "aws_iam_policy_document" "cxm_savings_modifications_policy" {
   version = "2012-10-17"
 
   statement {
+    # Manage configuration and enrollment of accounts for financial optimizations
     sid = "CommitmentManagementPermissions"
     actions = [
       # DynamoDB Reservations
@@ -144,7 +146,6 @@ data "aws_iam_policy_document" "cxm_savings_modifications_policy" {
       "ec2:AcceptReservedInstancesExchangeQuote",
       # RDS Reservations
       "rds:PurchaseReservedDBInstancesOffering",
-      # Redshift Reservations
       "redshift:AcceptReservedNodeExchange",
       "redshift:PurchaseReservedNodeOffering",
       # ElastiCache Reservations

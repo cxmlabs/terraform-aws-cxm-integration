@@ -178,7 +178,6 @@ provider "aws" {
 }
 ```
 
-
 ## Terraform doc
 
 <!-- BEGIN_TF_DOCS -->
@@ -193,10 +192,10 @@ provider "aws" {
 
 | Name | Version |
 |------|---------|
-| aws.root | 6.44.0 |
-| aws.cur | 6.44.0 |
-| aws.cloudtrail | 6.44.0 |
-| aws.flowlogs | 6.44.0 |
+| aws.root | >= 5.0 |
+| aws.cur | >= 5.0 |
+| aws.cloudtrail | >= 5.0 |
+| aws.flowlogs | >= 5.0 |
 
 ### Modules
 
