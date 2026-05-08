@@ -49,8 +49,6 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       RoleName: !Sub "${Prefix}-asset-crawler${RoleSuffix}"
-      # Mirrors terraform-aws-sub-account-cxm-enablement: enable_savings_modifications switches
-      # Service Quotas / Savings Plans between FullAccess and ReadOnlyAccess managed policies.
       ManagedPolicyArns:
         Fn::If:
           - SavingsModificationsEnabled
@@ -85,8 +83,6 @@ Resources:
             Condition:
               StringEquals:
                 sts:PrincipalOrgID: !Sub "${OrganizationID}"
-  # Base inventory: describe-only commitment monitoring + data-plane denies.
-  # Mirrors terraform-aws-sub-account-cxm-enablement policies.tf (inventory_policy).
   InventoryPolicy:
     Type: AWS::IAM::Policy
     DependsOn: IAMCrossAccountExecutionRole
@@ -165,7 +161,6 @@ Resources:
             Resource:
               - arn:aws:s3:::*/*
 
-  # RI / commitment write APIs (separate policy; mirrors inventory_savings_modifications_policy in Terraform).
   InventorySavingsModificationsPolicy:
     Type: AWS::IAM::Policy
     Condition: SavingsModificationsEnabled
