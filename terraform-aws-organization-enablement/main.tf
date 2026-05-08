@@ -88,7 +88,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       var.enable_savings_modifications ? [
         "cur:ModifyReportDefinition",
         "cur:PutReportDefinition",
-    ] : [])
+      ] : []
+    )
     resources = ["*"]
   }
 
@@ -162,7 +163,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
         # Saving Plans full management
         # NOTE: this should be handled by the policy attachment above - dpanofsky
         # "savingsplans:*"
-    ] : [])
+      ] : []
+    )
 
     resources = ["*"]
   }
