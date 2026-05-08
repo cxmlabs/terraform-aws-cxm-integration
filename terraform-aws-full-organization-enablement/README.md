@@ -20,7 +20,7 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 
 | Name | Version |
 |------|---------|
-| aws | 6.44.0 |
+| aws | >= 3.74.0 |
 
 ### Modules
 
