@@ -30,17 +30,25 @@ resource "aws_iam_role_policy_attachment" "read_only_access_policy_attachment" {
 
 # This is required in order to increase RI/Savings Plans quotas if need be
 resource "aws_iam_role_policy_attachment" "crawler_manage_ri_quotas_policy_attachment" {
-  count      = var.use_existing_iam_role_policy ? 0 : 1
-  role       = local.iam_role_name
-  policy_arn = var.enable_savings_modifications ? "arn:aws:iam::aws:policy/ServiceQuotasFullAccess" : "arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess"
+  count = var.use_existing_iam_role_policy ? 0 : 1
+  role  = local.iam_role_name
+  policy_arn = (
+    var.enable_savings_modifications ?
+    "arn:aws:iam::aws:policy/ServiceQuotasFullAccess" :
+    "arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess"
+  )
   depends_on = [module.cxm_cfg_iam_role]
 }
 
 # This is required in fully manage Savings Plans
 resource "aws_iam_role_policy_attachment" "crawler_manage_sp_policy_attachment" {
-  count      = var.use_existing_iam_role_policy ? 0 : 1
-  role       = local.iam_role_name
-  policy_arn = var.enable_savings_modifications ? "arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess" : "arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess"
+  count = var.use_existing_iam_role_policy ? 0 : 1
+  role  = local.iam_role_name
+  policy_arn = (
+    var.enable_savings_modifications ?
+    "arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess" :
+    "arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess"
+  )
   depends_on = [module.cxm_cfg_iam_role]
 }
 

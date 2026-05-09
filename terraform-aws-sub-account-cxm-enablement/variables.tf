@@ -40,6 +40,12 @@ variable "enable_savings_modifications" {
   description = "Enable savings plan and RI modifications (purchase, modify, cancel, etc.)."
 }
 
+variable "xacct_assume_role_org_id" {
+  type        = string
+  default     = null
+  description = "Optional Org ID to restrict the asset crawler to assume roles in. If not set, the asset crawler will be able to assume roles in all accounts."
+}
+
 variable "permission_boundary_arn" {
   type        = string
   default     = null

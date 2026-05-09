@@ -82,7 +82,8 @@ data "aws_iam_policy_document" "inventory_policy" {
 }
 
 data "aws_iam_policy_document" "inventory_savings_modifications_policy" {
-  count   = var.enable_savings_modifications ? 1 : 0
+  count = var.enable_savings_modifications ? 1 : 0
+
   version = "2012-10-17"
 
   statement {
