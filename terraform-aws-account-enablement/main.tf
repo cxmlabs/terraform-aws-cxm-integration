@@ -30,17 +30,25 @@ resource "aws_iam_role_policy_attachment" "read_only_access_policy_attachment" {
 
 # This is required in order to increase RI/Savings Plans quotas if need be
 resource "aws_iam_role_policy_attachment" "crawler_manage_ri_quotas_policy_attachment" {
-  count      = var.use_existing_iam_role_policy ? 0 : 1
-  role       = local.iam_role_name
-  policy_arn = "arn:aws:iam::aws:policy/ServiceQuotasFullAccess"
+  count = var.use_existing_iam_role_policy ? 0 : 1
+  role  = local.iam_role_name
+  policy_arn = (
+    var.enable_savings_modifications ?
+    "arn:aws:iam::aws:policy/ServiceQuotasFullAccess" :
+    "arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess"
+  )
   depends_on = [module.cxm_cfg_iam_role]
 }
 
 # This is required in fully manage Savings Plans
 resource "aws_iam_role_policy_attachment" "crawler_manage_sp_policy_attachment" {
-  count      = var.use_existing_iam_role_policy ? 0 : 1
-  role       = local.iam_role_name
-  policy_arn = "arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess"
+  count = var.use_existing_iam_role_policy ? 0 : 1
+  role  = local.iam_role_name
+  policy_arn = (
+    var.enable_savings_modifications ?
+    "arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess" :
+    "arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess"
+  )
   depends_on = [module.cxm_cfg_iam_role]
 }
 
@@ -50,12 +58,11 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
 
   statement {
     # Understand configuration and enrollment of accounts into financial optimizations
-    sid = "CommitmentManagementPermissions"
+    sid = "CommitmentMonitoringPermissions"
     actions = [
       # DynamoDB Reservations
       "dynamodb:DescribeReservedCapacity",
       "dynamodb:DescribeReservedCapacityOfferings",
-      "dynamodb:PurchaseReservedCapacityOfferings",
       # EC2 Reservations
       "ec2:DescribeReserved*",
       "ec2:DescribeAvailabilityZones",
@@ -65,47 +72,38 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeTags",
       "ec2:GetReserved*",
-      "ec2:ModifyReservedInstances",
-      "ec2:PurchaseReservedInstancesOffering",
-      "ec2:CreateReservedInstancesListing",
-      "ec2:CancelReservedInstancesListing",
-      "ec2:GetReservedInstancesExchangeQuote",
-      "ec2:AcceptReservedInstancesExchangeQuote",
       # RDS Reservations
       "rds:DescribeReserved*",
       "rds:ListTagsForResource*",
-      "rds:PurchaseReservedDBInstancesOffering",
       # Redshift Reservations
       "redshift:DescribeReserved*",
       "redshift:DescribeTags",
       "redshift:GetReserved*",
-      "redshift:AcceptReservedNodeExchange",
-      "redshift:PurchaseReservedNodeOffering",
       # ElastiCache Reservations
       "elasticache:DescribeReserved*",
       "elasticache:ListTagsForResource",
-      "elasticache:PurchaseReservedCacheNodesOffering",
       # ElasticSearch Reservations
       "es:DescribeReserved*",
       "es:ListTags",
-      "es:PurchaseReservedElasticsearchInstanceOffering",
-      "es:PurchaseReservedInstanceOffering",
       # memoryDB
       "memorydb:DescribeReserved*",
+      # memoryDB
       "memorydb:ListTags",
-      "memorydb:PurchaseReservedNodesOffering",
-      # Saving Plans full management
-      "savingsplans:*"
+      # Saving Plans read only access
+      # - savingsplans:Describe*
+      # - savingsplans:List*
+      # NOTE: this is handled by the `arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess` policy attached above - dpanofsky
     ]
     resources = ["*"]
   }
 
   statement {
     # Explicitly removing read access to S3 objects
-    sid           = "ExplicitDenyOnS3Files"
-    effect        = "Deny"
-    actions       = ["s3:GetObject"]
-    not_resources = ["arn:aws:s3:::*/*"]
+    sid     = "ExplicitDenyOnS3Files"
+    effect  = "Deny"
+    actions = ["s3:GetObject"]
+    # NOTE: reversed the flawed logic that combined deny with not_resources - dpanofsky
+    resources = ["arn:aws:s3:::*/*"]
   }
 
   statement {
@@ -137,6 +135,42 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
   }
 }
 
+data "aws_iam_policy_document" "cxm_savings_modifications_policy" {
+  count   = var.use_existing_iam_role_policy || !var.enable_savings_modifications ? 0 : 1
+  version = "2012-10-17"
+
+  statement {
+    # Manage configuration and enrollment of accounts for financial optimizations
+    sid = "CommitmentManagementPermissions"
+    actions = [
+      # DynamoDB Reservations
+      "dynamodb:PurchaseReservedCapacityOfferings",
+      # EC2 Reservations
+      "ec2:ModifyReservedInstances",
+      "ec2:PurchaseReservedInstancesOffering",
+      "ec2:CreateReservedInstancesListing",
+      "ec2:CancelReservedInstancesListing",
+      "ec2:GetReservedInstancesExchangeQuote",
+      "ec2:AcceptReservedInstancesExchangeQuote",
+      # RDS Reservations
+      "rds:PurchaseReservedDBInstancesOffering",
+      "redshift:AcceptReservedNodeExchange",
+      "redshift:PurchaseReservedNodeOffering",
+      # ElastiCache Reservations
+      "elasticache:PurchaseReservedCacheNodesOffering",
+      # ElasticSearch Reservations
+      "es:PurchaseReservedElasticsearchInstanceOffering",
+      "es:PurchaseReservedInstanceOffering",
+      # memoryDB
+      "memorydb:PurchaseReservedNodesOffering",
+      # Saving Plans full management
+      # - savingsplans:*
+      # NOTE: this is handled by the `arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess` policy attached above - dpanofsky
+    ]
+    resources = ["*"]
+  }
+}
+
 resource "aws_iam_policy" "cxm_read_only_policy" {
   count       = var.use_existing_iam_role_policy ? 0 : 1
   name        = local.cxm_read_only_policy_name
@@ -145,10 +179,25 @@ resource "aws_iam_policy" "cxm_read_only_policy" {
   tags        = var.tags
 }
 
+resource "aws_iam_policy" "cxm_savings_modifications_policy" {
+  count       = var.use_existing_iam_role_policy || !var.enable_savings_modifications ? 0 : 1
+  name        = "${var.prefix}-savings-modifications-policy-${random_id.uniq.hex}"
+  description = "Policy allowing Cloud ex Machina to manage RI and commitment modifications"
+  policy      = data.aws_iam_policy_document.cxm_savings_modifications_policy[0].json
+  tags        = var.tags
+}
+
 resource "aws_iam_role_policy_attachment" "cxm_read_only_policy_attachment" {
   count      = var.use_existing_iam_role_policy ? 0 : 1
   role       = local.iam_role_name
   policy_arn = aws_iam_policy.cxm_read_only_policy[0].arn
+  depends_on = [module.cxm_cfg_iam_role]
+}
+
+resource "aws_iam_role_policy_attachment" "cxm_savings_modifications_policy_attachment" {
+  count      = var.use_existing_iam_role_policy || !var.enable_savings_modifications ? 0 : 1
+  role       = local.iam_role_name
+  policy_arn = aws_iam_policy.cxm_savings_modifications_policy[0].arn
   depends_on = [module.cxm_cfg_iam_role]
 }
 
@@ -163,10 +212,8 @@ data "aws_iam_policy_document" "cxm_scheduling_policy" {
   version = "2012-10-17"
 
   statement {
-    sid = "ECSScaling"
-    actions = [
-      "ecs:UpdateService",
-    ]
+    sid       = "ECSScaling"
+    actions   = ["ecs:UpdateService"]
     resources = ["*"]
   }
 
@@ -202,10 +249,8 @@ data "aws_iam_policy_document" "cxm_scheduling_policy" {
   }
 
   statement {
-    sid = "EKSNodegroupScaling"
-    actions = [
-      "eks:UpdateNodegroupConfig",
-    ]
+    sid       = "EKSNodegroupScaling"
+    actions   = ["eks:UpdateNodegroupConfig"]
     resources = ["*"]
   }
 
@@ -222,10 +267,8 @@ data "aws_iam_policy_document" "cxm_scheduling_policy" {
     # NOTE: RegisterScalableTarget covers all Application Auto Scaling namespaces
     # (ECS, DynamoDB, AppStream, etc.), not just the services listed above.
     # AWS does not offer namespace-scoped IAM actions for this service.
-    sid = "AppAutoScaling"
-    actions = [
-      "application-autoscaling:RegisterScalableTarget",
-    ]
+    sid       = "AppAutoScaling"
+    actions   = ["application-autoscaling:RegisterScalableTarget"]
     resources = ["*"]
   }
 
@@ -254,10 +297,8 @@ data "aws_iam_policy_document" "cxm_scheduling_policy" {
   }
 
   statement {
-    sid = "SageMakerScaling"
-    actions = [
-      "sagemaker:UpdateEndpointWeightsAndCapacities",
-    ]
+    sid       = "SageMakerScaling"
+    actions   = ["sagemaker:UpdateEndpointWeightsAndCapacities"]
     resources = ["*"]
   }
 }

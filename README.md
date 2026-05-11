@@ -178,7 +178,6 @@ provider "aws" {
 }
 ```
 
-
 ## Terraform doc
 
 <!-- BEGIN_TF_DOCS -->
@@ -237,6 +236,7 @@ provider "aws" {
 | disable_flowlogs_analysis | Disable VPC Flow Logs analysis. Disabled by default (opt-in). Set to false to enable. | `bool` | `true` | no |
 | use_lone_account_instead_of_aws_organization | If your AWS account is not using AWS Organization and is considered a 'lone account', set this to true. This will enable CXM on a single account. False by default. | `bool` | `false` | no |
 | enable_scheduling | Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default. | `bool` | `false` | no |
+| enable_savings_modifications | Enable savings plan and RI modifications (purchase, modify, cancel, etc.). Setting this to true to preserve existing behavior. | `bool` | `true` | no |
 | disable_stackset_deployment | Disable CloudFormation StackSet deployment to member accounts. Set to true when using the terraform-aws-sub-account-cxm-enablement module instead. False by default. | `bool` | `false` | no |
 | deployment_targets | Add a filter, and list of Organizational Units from the Organization to only deploy to. If left blank, all organization will be crawled by default. | `set(any)` | `[]` | no |
 | permission_boundary_arn | Optional - ARN of the policy that is used to set the permissions boundary for the role. | `string` | `null` | no |

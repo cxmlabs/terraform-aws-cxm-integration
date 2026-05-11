@@ -53,3 +53,15 @@ variable "tags" {
   description = "A map of K:V pairs to use as tags on all resources."
   default     = {}
 }
+
+variable "enable_savings_modifications" {
+  type        = bool
+  default     = true
+  description = "Enable savings plan and RI modifications (purchase, modify, cancel, etc.). Setting this to true to preserve existing behavior."
+}
+
+variable "disable_stackset_deployment" {
+  type        = bool
+  default     = false
+  description = "Disable the CloudWatch Event rule that monitors CloudFormation StackSet status changes. Set to true if using StackSets instead of the terraform-aws-sub-account-cxm-enablement module. False by default to preserve existing behavior."
+}

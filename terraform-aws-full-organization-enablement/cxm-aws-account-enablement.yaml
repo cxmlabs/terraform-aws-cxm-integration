@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   Prefix:
     Type: String
@@ -25,10 +25,19 @@ Parameters:
       - "true"
       - "false"
     Description: Enable scheduling and scaling permissions for FinOps cost optimization (disabled by default)
-
+  EnableSavingsModifications:
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: Enable savings plan and RI modifications (purchase, modify, cancel, etc.). Setting this to true to preserve existing behavior (true by default)
+  OrganizationID:
+    Type: String
+    Description: AWS Organizations root ID (o-xxxxxxxxxx) for sts:PrincipalOrgID on the cross-account admin assume-role statement.
 Conditions:
   SchedulingEnabled: !Equals [!Ref EnableScheduling, "true"]
-
+  SavingsModificationsEnabled: !Equals [!Ref EnableSavingsModifications, "true"]
 Resources:
   ################################################################
   #
@@ -39,14 +48,19 @@ Resources:
     DependsOn: CloudFormationNotifier
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${Prefix}-asset-crawler${RoleSuffix}'
+      RoleName: !Sub "${Prefix}-asset-crawler${RoleSuffix}"
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/ReadOnlyAccess
-        - arn:aws:iam::aws:policy/ServiceQuotasFullAccess
-        - arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess
+        Fn::If:
+          - SavingsModificationsEnabled
+          - - arn:aws:iam::aws:policy/ReadOnlyAccess
+            - arn:aws:iam::aws:policy/ServiceQuotasFullAccess
+            - arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess
+          - - arn:aws:iam::aws:policy/ReadOnlyAccess
+            - arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
+            - arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess
       MaxSessionDuration: 43200
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -55,33 +69,37 @@ Resources:
                 - ecs-tasks.amazonaws.com
                 - codebuild.amazonaws.com
             Action: sts:AssumeRole
+            # NOTE: Does this do what they think? Service principals don't normally use external IDs. - dpanofsky
             Condition:
               StringEquals:
-                sts:ExternalId: !Sub '${CXMExternalID}'
+                sts:ExternalId: !Sub "${CXMExternalID}"
           - Effect: Allow
             Action:
               - sts:AssumeRole
               - sts:TagSession
             Principal:
-              AWS: !Sub '${AdminRoleArn}'
+              AWS: !Sub "${AdminRoleArn}"
+            # NOTE: Adding a organization restriction to be compliant with cloud working group requirements. - dpanofsky
+            Condition:
+              StringEquals:
+                sts:PrincipalOrgID: !Sub "${OrganizationID}"
   InventoryPolicy:
     Type: AWS::IAM::Policy
     DependsOn: IAMCrossAccountExecutionRole
     Properties:
-      PolicyName: !Sub '${Prefix}-asset-crawler-readonly${RoleSuffix}'
+      PolicyName: !Sub "${Prefix}-asset-crawler-readonly${RoleSuffix}"
       Roles:
-        - !Ref 'IAMCrossAccountExecutionRole'
+        - !Ref "IAMCrossAccountExecutionRole"
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
-            Sid: CommitmentManagementPermissions
+            Sid: CommitmentMonitoringPermissions
             Resource: "*"
             Action:
               # DynamoDB Reservations
               - dynamodb:DescribeReservedCapacity
               - dynamodb:DescribeReservedCapacityOfferings
-              - dynamodb:PurchaseReservedCapacityOfferings
               # EC2 Reservations
               - ec2:DescribeReserved*
               - ec2:DescribeAvailabilityZones
@@ -91,37 +109,26 @@ Resources:
               - ec2:DescribeInstanceTypes
               - ec2:DescribeTags
               - ec2:GetReserved*
-              - ec2:ModifyReservedInstances
-              - ec2:PurchaseReservedInstancesOffering
-              - ec2:CreateReservedInstancesListing
-              - ec2:CancelReservedInstancesListing
-              - ec2:GetReservedInstancesExchangeQuote
-              - ec2:AcceptReservedInstancesExchangeQuote
               # RDS Reservations
               - rds:DescribeReserved*
               - rds:ListTagsForResource*
-              - rds:PurchaseReservedDBInstancesOffering
               # Redshift Reservations
               - redshift:DescribeReserved*
               - redshift:DescribeTags
               - redshift:GetReserved*
-              - redshift:AcceptReservedNodeExchange
-              - redshift:PurchaseReservedNodeOffering
               # ElastiCache Reservations
               - elasticache:DescribeReserved*
               - elasticache:ListTagsForResource
-              - elasticache:PurchaseReservedCacheNodesOffering
               # ElasticSearch Reservations
               - es:DescribeReserved*
               - es:ListTags
-              - es:PurchaseReservedElasticsearchInstanceOffering
-              - es:PurchaseReservedInstanceOffering
               # memoryDB
               - memorydb:DescribeReserved*
               - memorydb:ListTags
-              - memorydb:PurchaseReservedNodesOffering
-              # Saving Plans full management
-              - savingsplans:*
+              # Saving Plans read only access
+              # - savingsplans:Describe*
+              # - savingsplans:List*
+              # NOTE: this is handled by the `arn:aws:iam::aws:policy/AWSSavingsPlansReadOnlyAccess` policy attachment above - dpanofsky
           # Explicitly denying data plane API Calls
           - Sid: ExplicitDenyToDataPlane
             Effect: Deny
@@ -146,6 +153,53 @@ Resources:
               - sdb:Select*
               - sqs:ReceiveMessage
               - rds-data:*
+          # NOTE: added this to explicitly deny read access to S3 objects following pattern from other deny lists - dpanofsky
+          - Sid: ExplicitDenyOnS3Files
+            Effect: Deny
+            Action:
+              - s3:GetObject
+            Resource:
+              - arn:aws:s3:::*/*
+
+  InventorySavingsModificationsPolicy:
+    Type: AWS::IAM::Policy
+    Condition: SavingsModificationsEnabled
+    DependsOn: IAMCrossAccountExecutionRole
+    Properties:
+      PolicyName: !Sub "${Prefix}-asset-crawler-savings-modifications${RoleSuffix}"
+      Roles:
+        - !Ref "IAMCrossAccountExecutionRole"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Sid: CommitmentManagementPermissions
+            Resource: "*"
+            Action:
+              # DynamoDB Reservations
+              - dynamodb:PurchaseReservedCapacityOfferings
+              # EC2 Reservations
+              - ec2:ModifyReservedInstances
+              - ec2:PurchaseReservedInstancesOffering
+              - ec2:CreateReservedInstancesListing
+              - ec2:CancelReservedInstancesListing
+              - ec2:GetReservedInstancesExchangeQuote
+              - ec2:AcceptReservedInstancesExchangeQuote
+              # RDS Reservations
+              - rds:PurchaseReservedDBInstancesOffering
+              # Redshift Reservations
+              - redshift:AcceptReservedNodeExchange
+              - redshift:PurchaseReservedNodeOffering
+              # ElastiCache Reservations
+              - elasticache:PurchaseReservedCacheNodesOffering
+              # ElasticSearch Reservations
+              - es:PurchaseReservedElasticsearchInstanceOffering
+              - es:PurchaseReservedInstanceOffering
+              # memoryDB
+              - memorydb:PurchaseReservedNodesOffering
+              # Saving Plans full management
+              # - savingsplans:*
+              # NOTE: this is handled by the `arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess` policy attached above - dpanofsky
 
   ################################################################
   #
@@ -158,11 +212,11 @@ Resources:
     Condition: SchedulingEnabled
     DependsOn: IAMCrossAccountExecutionRole
     Properties:
-      PolicyName: !Sub '${Prefix}-asset-crawler-scheduling${RoleSuffix}'
+      PolicyName: !Sub "${Prefix}-asset-crawler-scheduling${RoleSuffix}"
       Roles:
-        - !Ref 'IAMCrossAccountExecutionRole'
+        - !Ref "IAMCrossAccountExecutionRole"
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Sid: SchedulingPermissions
             Effect: Allow
@@ -213,10 +267,10 @@ Resources:
   IAMCrossAccountNotificationRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${Prefix}-feedback-loop-control-plane${RoleSuffix}'
+      RoleName: !Sub "${Prefix}-feedback-loop-control-plane${RoleSuffix}"
       MaxSessionDuration: 43200
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -246,18 +300,19 @@ Resources:
           - "CloudFormation StackSet StackInstance Status Change"
         detail:
           status-details:
-            status: [
-              "CREATE_COMPLETE",
-              "CREATE_FAILED",
-              "DELETE_COMPLETE",
-              "DELETE_FAILED",
-              "ROLLBACK_COMPLETE",
-              "ROLLBACK_FAILED",
-              "UPDATE_COMPLETE",
-              "UPDATE_FAILED",
-              "UPDATE_ROLLBACK_COMPLETE",
-              "UPDATE_ROLLBACK_FAILED"
-            ]
+            status:
+              [
+                "CREATE_COMPLETE",
+                "CREATE_FAILED",
+                "DELETE_COMPLETE",
+                "DELETE_FAILED",
+                "ROLLBACK_COMPLETE",
+                "ROLLBACK_FAILED",
+                "UPDATE_COMPLETE",
+                "UPDATE_FAILED",
+                "UPDATE_ROLLBACK_COMPLETE",
+                "UPDATE_ROLLBACK_FAILED",
+              ]
       State: "ENABLED"
       Targets:
         - Id: CloudFormationNotifier
@@ -267,7 +322,7 @@ Resources:
 Outputs:
   RoleArn:
     Description: ARN of the IAM Role
-    Value: !GetAtt 'IAMCrossAccountExecutionRole.Arn'
+    Value: !GetAtt "IAMCrossAccountExecutionRole.Arn"
   RoleId:
     Description: Id of the IAM Role
-    Value: !GetAtt 'IAMCrossAccountExecutionRole.RoleId'
+    Value: !GetAtt "IAMCrossAccountExecutionRole.RoleId"
