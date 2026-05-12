@@ -53,4 +53,7 @@ No modules.
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access. |
 | prefix | Prefix to use for all resources created by this module. |
 | iam_role_name | CxM IAM Role deployed in all accounts |
+| trusted_admin_role_arn | ARN of the org-crawler role trusted to assume into sub-account asset-crawler roles. |
+| stack_and_role_suffix | Suffix appended to StackSet and IAM role names. |
+| stackset_name | Name of the CloudFormation StackSet deploying roles to member accounts. |
 <!-- END_TF_DOCS -->

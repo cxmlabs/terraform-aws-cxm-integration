@@ -76,4 +76,7 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 | external_id | The External ID configured into the IAM role. |
 | iam_role_name | The IAM Role name. |
 | iam_role_arn | The IAM Role ARN. |
+| prefix | Prefix used for all resource names. |
+| cxm_aws_account_id | CXM AWS account ID trusted by the IAM role. |
+| assume_role_target_pattern | IAM resource pattern the org-crawler is allowed to assume into member accounts. |
 <!-- END_TF_DOCS -->

@@ -130,6 +130,19 @@ module "cxm_sub_account_production" {
 
   tags = { "ManagedBy" = "terraform" }
 }
+
+# Outputs — useful for debugging connectivity issues with CXM support
+output "cxm_sub_account_engineering" {
+  value = module.cxm_sub_account_engineering
+}
+
+output "cxm_sub_account_staging" {
+  value = module.cxm_sub_account_staging
+}
+
+output "cxm_sub_account_production" {
+  value = module.cxm_sub_account_production
+}
 ```
 
 ### Discovering account IDs
@@ -168,7 +181,19 @@ aws organizations list-accounts \
 |------|-------------|
 | `iam_role_arn` | ARN of the CXM asset-crawler IAM role |
 | `iam_role_name` | Name of the CXM asset-crawler IAM role |
+| `trusted_admin_role_arn` | ARN of the admin role trusted to assume into the asset-crawler |
+| `prefix` | Prefix used for all resource names |
+| `role_suffix` | Suffix appended to IAM role names |
+| `cxm_aws_account_id` | CXM AWS account ID used in trust and event forwarding policies |
 | `feedback_loop_role_arn` | ARN of the feedback loop IAM role for EventBridge forwarding |
+
+## Troubleshooting
+
+If the CXM platform cannot assume into a sub-account, run `terraform output` and share the result with CXM support. The key values to verify:
+
+- `trusted_admin_role_arn` must match the organization-crawler role ARN from the root module (`organization_iam_role_arn`)
+- `prefix` must match the prefix used in the root module deployment
+- `iam_role_name` must match the pattern the org-crawler is allowed to assume (`<prefix>-*`)
 
 ## Tips for OpenTofu and Terragrunt
 

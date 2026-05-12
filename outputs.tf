@@ -73,3 +73,23 @@ output "discovered_account_ids" {
   value       = local.enable_root_org_discovery ? [for acct in data.aws_organizations_organization.org[0].non_master_accounts : acct.id if acct.status == "ACTIVE"] : []
   description = "Active sub-account IDs discovered from the organization. Use these to set up the terraform-aws-sub-account-cxm-enablement module."
 }
+
+output "prefix" {
+  value       = local.prefix
+  description = "Prefix used for all resource names across modules."
+}
+
+output "role_suffix" {
+  value       = local.role_suffix
+  description = "Suffix appended to IAM role names."
+}
+
+output "organization_assume_role_target_pattern" {
+  value       = local.enable_root_org_discovery ? "arn:aws:iam::*:role/${local.prefix}-*" : null
+  description = "IAM resource pattern the org-crawler is allowed to assume into member accounts. Sub-account roles must match this pattern."
+}
+
+output "sub_account_expected_role_name" {
+  value       = "${local.prefix}-asset-crawler${local.role_suffix}"
+  description = "Expected IAM role name in sub-accounts. Pass this as the asset-crawler role name when running diagnostics."
+}
