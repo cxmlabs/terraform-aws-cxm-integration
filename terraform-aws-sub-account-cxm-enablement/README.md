@@ -133,27 +133,15 @@ module "cxm_sub_account_production" {
 
 # Outputs — useful for debugging connectivity issues with CXM support
 output "cxm_sub_account_engineering" {
-  value = {
-    iam_role_arn           = module.cxm_sub_account_engineering.iam_role_arn
-    trusted_admin_role_arn = module.cxm_sub_account_engineering.trusted_admin_role_arn
-    prefix                 = module.cxm_sub_account_engineering.prefix
-  }
+  value = module.cxm_sub_account_engineering
 }
 
 output "cxm_sub_account_staging" {
-  value = {
-    iam_role_arn           = module.cxm_sub_account_engineering.iam_role_arn
-    trusted_admin_role_arn = module.cxm_sub_account_staging.trusted_admin_role_arn
-    prefix                 = module.cxm_sub_account_staging.prefix
-  }
+  value = module.cxm_sub_account_staging
 }
 
 output "cxm_sub_account_production" {
-  value = {
-    iam_role_arn           = module.cxm_sub_account_production.iam_role_arn
-    trusted_admin_role_arn = module.cxm_sub_account_production.trusted_admin_role_arn
-    prefix                 = module.cxm_sub_account_production.prefix
-  }
+  value = module.cxm_sub_account_production
 }
 ```
 
