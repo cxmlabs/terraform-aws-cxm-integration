@@ -128,6 +128,8 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
       "kinesis:GetRecords",
       "kinesis:GetShardIterator",
       "lambda:GetFunction",
+      "lambda:ListFunctions",
+      "lambda:ListProvisionedConcurrencyConfigs",
       "logs:GetLogEvents",
       "sdb:Select*",
       "sqs:ReceiveMessage",
