@@ -101,7 +101,7 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
   }
 
   statement {
-    # Read org-wide RI/SP discount-sharing preferences (payer-account only) — CLO-5928
+    # Read RI/SP discount-sharing preferences
     sid     = "BillingPreferencesReadOnlyAccess"
     actions = ["billing:GetBillingPreferences"]
     resources = ["*"]

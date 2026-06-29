@@ -95,7 +95,9 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
       "memorydb:ListTags",
       "memorydb:PurchaseReservedNodesOffering",
       # Saving Plans full management
-      "savingsplans:*"
+      "savingsplans:*",
+      # Read RI/SP discount-sharing preferences
+      "billing:GetBillingPreferences"
     ]
     resources = ["*"]
   }
