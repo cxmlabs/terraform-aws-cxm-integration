@@ -63,6 +63,15 @@ resource "aws_iam_role_policy" "inventory" {
         ]
       },
       {
+        Sid      = "BedrockInventoryPermissions"
+        Effect   = "Allow"
+        Resource = "*"
+        Action = [
+          "bedrock:List*",
+          "bedrock:Get*",
+        ]
+      },
+      {
         Sid      = "ExplicitDenyToDataPlane"
         Effect   = "Deny"
         Resource = "*"
