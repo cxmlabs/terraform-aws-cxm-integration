@@ -265,4 +265,8 @@ provider "aws" {
 | flowlogs_iam_role_arn | ARN of the CXM IAM role for VPC Flow Logs reading |
 | stackset_deployment_region | AWS region where StackSet instances deploy IAM roles in member accounts (hardcoded to us-east-1) |
 | discovered_account_ids | Active sub-account IDs discovered from the organization. Use these to set up the terraform-aws-sub-account-cxm-enablement module. |
+| prefix | Prefix used for all resource names across modules. |
+| role_suffix | Suffix appended to IAM role names. |
+| organization_assume_role_target_pattern | IAM resource pattern the org-crawler is allowed to assume into member accounts. Sub-account roles must match this pattern. |
+| sub_account_expected_role_name | Expected IAM role name in sub-accounts. Pass this as the asset-crawler role name when running diagnostics. |
 <!-- END_TF_DOCS -->
