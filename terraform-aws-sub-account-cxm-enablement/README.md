@@ -6,8 +6,8 @@ Deploys CXM asset-crawler IAM roles and EventBridge feedback loop into a single 
 
 | Scenario | Recommended approach |
 |----------|---------------------|
-| Full org, auto-deploy to new accounts | Root module with StackSet ([Section 4](../GUIDE.md#section-4-full-organization-setup)) |
-| OU-scoped StackSet deployment | Root module with `deployment_targets` ([Section 3](../GUIDE.md#section-3-deploy-to-a-single-ou)) |
+| Full org, auto-deploy to new accounts | Root module with StackSet ([Section 4](https://github.com/cxmlabs/terraform-aws-cxm-integration/blob/main/GUIDE.md#section-4-full-organization-setup)) |
+| OU-scoped StackSet deployment | Root module with `deployment_targets` ([Section 3](https://github.com/cxmlabs/terraform-aws-cxm-integration/blob/main/GUIDE.md#section-3-deploy-to-a-single-ou)) |
 | Terraform-only (no CloudFormation) | **This module** — one block per account |
 | Selective accounts, full Terraform control | **This module** — one block per account |
 | Terragrunt multi-account automation | **This module** + Terragrunt (see [tips below](#terragrunt)) |
@@ -55,7 +55,7 @@ The provisioning role is only used during `terraform apply`. The runtime role is
 
 ## Prerequisites
 
-- [Section 1: Organization Foundation](../GUIDE.md#section-1-organization-foundation) deployed (provides the `organization_iam_role_arn` needed for `cxm_admin_role_arn`)
+- [Section 1: Organization Foundation](https://github.com/cxmlabs/terraform-aws-cxm-integration/blob/main/GUIDE.md#section-1-organization-foundation) deployed (provides the `organization_iam_role_arn` needed for `cxm_admin_role_arn`)
 - Terraform >= 1.5.0 and AWS provider >= 5.0
 - A provider configured to authenticate into each target sub-account
 

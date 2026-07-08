@@ -120,9 +120,9 @@ module "cxm_sub_account_production" {
 
 You configure the provider with whatever auth method you prefer (assume_role, SSO profile, etc.) — the module doesn't manage authentication. Set `disable_stackset_deployment = true` on the root module to skip the CloudFormation StackSet when using this approach.
 
-See the [sub-account module documentation](./terraform-aws-sub-account-cxm-enablement/README.md) for the full two-roles explanation, variables, and OpenTofu/Terragrunt tips, or [Section 5 of the Guide](./GUIDE.md#section-5-terraform-native-sub-account-deployment) for step-by-step instructions.
+See the [sub-account module documentation](https://github.com/cxmlabs/terraform-aws-cxm-integration/tree/main/terraform-aws-sub-account-cxm-enablement) for the full two-roles explanation, variables, and OpenTofu/Terragrunt tips, or [Section 5 of the Guide](https://github.com/cxmlabs/terraform-aws-cxm-integration/blob/main/GUIDE.md#section-5-terraform-native-sub-account-deployment) for step-by-step instructions.
 
-> **Note:** Standard Terraform cannot dynamically create providers, so you need one module block per account. For auto-deployment to new accounts, use CloudFormation StackSets (the default — see [Section 4 of the Guide](./GUIDE.md#section-4-full-organization-setup)).
+> **Note:** Standard Terraform cannot dynamically create providers, so you need one module block per account. For auto-deployment to new accounts, use CloudFormation StackSets (the default — see [Section 4 of the Guide](https://github.com/cxmlabs/terraform-aws-cxm-integration/blob/main/GUIDE.md#section-4-full-organization-setup)).
 
 ### EKS Cluster Enablement
 
@@ -138,7 +138,7 @@ module "cxm_eks_enablement" {
 }
 ```
 
-This module automatically detects whether your EKS cluster supports modern access entries or requires the legacy aws-auth ConfigMap approach. The `cxm_iam_role_arn` output automatically selects the appropriate IAM role based on your deployment type (lone account vs organization). For detailed usage instructions, examples, and configuration options, see the [EKS cluster enablement module documentation](./terraform-aws-eks-cluster-enablement/README.md).
+This module automatically detects whether your EKS cluster supports modern access entries or requires the legacy aws-auth ConfigMap approach. The `cxm_iam_role_arn` output automatically selects the appropriate IAM role based on your deployment type (lone account vs organization). For detailed usage instructions, examples, and configuration options, see the [EKS cluster enablement module documentation](https://github.com/cxmlabs/terraform-aws-cxm-integration/tree/main/terraform-aws-eks-cluster-enablement).
 
 ### About providers
 
