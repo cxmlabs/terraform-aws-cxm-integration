@@ -90,7 +90,6 @@ resource "aws_iam_role_policy" "inventory" {
           "ecs:RegisterTaskDefinition",
           "kinesis:GetRecords",
           "kinesis:GetShardIterator",
-          "lambda:GetFunction",
           "logs:GetLogEvents",
           "sdb:Select*",
           "sqs:ReceiveMessage",
