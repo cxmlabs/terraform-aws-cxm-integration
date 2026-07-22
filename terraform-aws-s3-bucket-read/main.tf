@@ -30,8 +30,8 @@ data "aws_iam_policy_document" "cxm_s3_ro_policy" {
   version = "2012-10-17"
 
   statement {
-    sid       = "ListFilesInBUcket"
-    actions   = ["s3:ListBucket"]
+    sid       = "ListFilesInBucket"
+    actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
     resources = ["arn:aws:s3:::${var.s3_bucket_name}"]
   }
 

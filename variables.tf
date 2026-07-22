@@ -60,6 +60,12 @@ variable "enable_scheduling" {
   description = "Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default."
 }
 
+variable "disable_stackset_deployment" {
+  type        = bool
+  default     = false
+  description = "Disable CloudFormation StackSet deployment to member accounts. Set to true when using the terraform-aws-sub-account-cxm-enablement module instead. False by default."
+}
+
 ## Optional
 variable "deployment_targets" {
   type        = set(any)

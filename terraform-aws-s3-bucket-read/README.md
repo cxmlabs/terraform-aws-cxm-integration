@@ -73,4 +73,6 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 | iam_role_name | The IAM Role name |
 | iam_role_arn | The IAM Role ARN |
 | s3_bucket_name | Name of the S3 Bucket |
+| prefix | Prefix used for all resource names. |
+| cxm_aws_account_id | CXM AWS account ID trusted by the IAM role. |
 <!-- END_TF_DOCS -->
