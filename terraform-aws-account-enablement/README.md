@@ -12,7 +12,7 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 ### Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | terraform | >= 1.5.0 |
 | aws | >= 3.74.0 |
 | random | >= 2.1 |
@@ -20,20 +20,20 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 ### Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | random | >= 2.1 |
 | aws | >= 3.74.0 |
 
 ### Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | cxm_cfg_iam_role | ../terraform-aws-iam-role | n/a |
 
 ### Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [aws_iam_policy.cxm_read_only_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.cxm_scheduling_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role_policy_attachment.crawler_manage_ri_quotas_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
@@ -48,7 +48,7 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 ### Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access. | `string` | n/a | yes |
 | cxm_external_id | External ID to use in the trust relationship. Required to match the existing External ID when setting use_existing_iam_role to `true`. | `string` | n/a | yes |
 | iam_role_name | Name of the IAM role to set. Required to match with iam_role_arn if use_existing_iam_role is set to `true`. Will be prefixed with var.prefix. | `string` | n/a | yes |
@@ -64,7 +64,7 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 ### Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | external_id | The External ID configured into the IAM role |
 | iam_role_name | The IAM Role name |
 | iam_role_arn | The IAM Role ARN |

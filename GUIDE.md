@@ -904,7 +904,7 @@ terraform apply
 # Step 3: Upgrade module version and remove the aws.benchmarking provider alias
 module "cxm_integration" {
   source  = "cxmlabs/cxm-integration/aws"
-
+  version = "1.0.0"
 
   providers = {
     aws.root       = aws.root
