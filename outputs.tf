@@ -64,6 +64,26 @@ output "flowlogs_iam_role_arn" {
   description = "ARN of the CXM IAM role for VPC Flow Logs reading"
 }
 
+# In-place query access. These buckets always carry AWS log-delivery statements, so the
+# module never owns their policies: it renders the statements to merge into your own.
+output "inplace_query_bucket_policy_statements" {
+  value = merge(
+    local.enable_cloudtrail ? { cloudtrail = module.enable_cloudtrail[0].inplace_query_bucket_policy_statements_json } : {},
+    local.enable_flowlogs ? { flowlogs = module.enable_flowlogs[0].inplace_query_bucket_policy_statements_json } : {},
+  )
+  description = "Bucket policy statements to merge into each log bucket's existing policy so CXM can query it in place, keyed by data source."
+}
+
+output "inplace_query_kms_key_policy_statements" {
+  value = {
+    for source, statement in merge(
+      local.enable_cloudtrail ? { cloudtrail = module.enable_cloudtrail[0].inplace_query_kms_key_policy_statement_json } : {},
+      local.enable_flowlogs ? { flowlogs = module.enable_flowlogs[0].inplace_query_kms_key_policy_statement_json } : {},
+    ) : source => statement if statement != null
+  }
+  description = "KMS key policy statements to merge into each log bucket's encryption key policy, keyed by data source. Empty when no customer managed key is configured."
+}
+
 output "stackset_deployment_region" {
   value       = local.enable_root_org_discovery ? "us-east-1" : null
   description = "AWS region where StackSet instances deploy IAM roles in member accounts (hardcoded to us-east-1)"

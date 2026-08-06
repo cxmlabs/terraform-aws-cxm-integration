@@ -69,6 +69,36 @@ variable "cxm_s3_read_policy_name" {
   description = "Name of the IAM Policy to read the bucket. Defaults to cxm-s3-ro-policy-$${random_id.uniq.hex} when empty"
 }
 
+variable "inplace_query_object_prefix" {
+  type        = string
+  default     = "AWSLogs"
+  description = "Object key prefix the in-place query grant is narrowed to. A trailing `/` is added automatically."
+}
+
+variable "manage_bucket_policy" {
+  type        = bool
+  default     = false
+  description = "Set to `true` only for a bucket dedicated to this integration. Terraform then owns the bucket policy. Leave `false` for CloudTrail and VPC Flow Logs buckets: they carry AWS log-delivery statements, and taking ownership risks breaking log delivery. In the default mode the required statements are exposed as outputs for you to merge into your own policy."
+}
+
+variable "merge_existing_bucket_policy" {
+  type        = bool
+  default     = true
+  description = "When manage_bucket_policy is `true`, read the bucket's current policy and merge into it instead of replacing it. Set to `false` only for a bucket that has no policy at all — the read fails otherwise."
+}
+
+variable "manage_kms_key_policy" {
+  type        = bool
+  default     = false
+  description = "Set to `true` to let Terraform own the KMS key policy of s3_bucket_kms_key_arn. Requires existing_kms_key_policy_json. Leave `false` to take the statement from the outputs instead."
+}
+
+variable "existing_kms_key_policy_json" {
+  type        = string
+  default     = null
+  description = "Current policy of s3_bucket_kms_key_arn, merged with the CXM decrypt statement. Required when manage_kms_key_policy is `true`: the AWS provider exposes no data source for a key policy, and replacing one without its administrative statements makes the key unmanageable."
+}
+
 variable "tags" {
   type        = map(string)
   description = "A map/dictionary of Tags to be assigned to created resources"

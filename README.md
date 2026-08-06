@@ -185,23 +185,23 @@ provider "aws" {
 ### Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | terraform | >= 1.5.0 |
 | aws | >= 5.0 |
 
 ### Providers
 
 | Name | Version |
-|------|---------|
-| aws.root | >= 5.0 |
-| aws.cur | >= 5.0 |
-| aws.cloudtrail | >= 5.0 |
-| aws.flowlogs | >= 5.0 |
+| ---- | ------- |
+| aws.root | 6.58.0 |
+| aws.cur | 6.58.0 |
+| aws.cloudtrail | 6.58.0 |
+| aws.flowlogs | 6.58.0 |
 
 ### Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | enable_root_organization | ./terraform-aws-organization-enablement | n/a |
 | enable_sub_accounts | ./terraform-aws-full-organization-enablement | n/a |
 | enable_lone_account | ./terraform-aws-account-enablement | n/a |
@@ -212,7 +212,7 @@ provider "aws" {
 ### Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [aws_caller_identity.cloudtrail](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_caller_identity.cur](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_caller_identity.flowlogs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
@@ -226,7 +226,7 @@ provider "aws" {
 ### Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access to. Provided by CXM. | `string` | n/a | yes |
 | cxm_external_id | External ID to use in the trust relationship. Provided by CXM. | `string` | n/a | yes |
 | cost_usage_report_bucket_name | Name of the bucket that is used to store CUR data. Required when disable_cur_analysis is false (the default). | `string` | `null` | no |
@@ -250,7 +250,7 @@ provider "aws" {
 ### Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | lone_account_iam_role_arn | ARN of the CXM IAM role for lone account deployment |
 | organization_iam_role_arn | ARN of the CXM IAM role for organization root deployment |
 | cxm_iam_role_name | Name of the CXM IAM role (automatically selects between lone account or organization deployment) |
@@ -263,6 +263,8 @@ provider "aws" {
 | flowlogs_account_id | AWS account ID where the VPC Flow Logs reader role is deployed |
 | flowlogs_region | AWS region used for the VPC Flow Logs deployment (must match the Flow Logs S3 bucket region) |
 | flowlogs_iam_role_arn | ARN of the CXM IAM role for VPC Flow Logs reading |
+| inplace_query_bucket_policy_statements | Bucket policy statements to merge into each log bucket's existing policy so CXM can query it in place, keyed by data source. |
+| inplace_query_kms_key_policy_statements | KMS key policy statements to merge into each log bucket's encryption key policy, keyed by data source. Empty when no customer managed key is configured. |
 | stackset_deployment_region | AWS region where StackSet instances deploy IAM roles in member accounts (hardcoded to us-east-1) |
 | discovered_account_ids | Active sub-account IDs discovered from the organization. Use these to set up the terraform-aws-sub-account-cxm-enablement module. |
 | prefix | Prefix used for all resource names across modules. |
