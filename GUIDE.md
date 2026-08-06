@@ -641,6 +641,136 @@ No provider changes needed — `aws.flowlogs` already points to `aws` (same acco
 
 ---
 
+## Querying Logs In Place (Bucket and Key Resource Policies)
+
+CXM can analyse your CloudTrail and VPC Flow Logs **in place** — reading the objects
+straight out of your bucket instead of copying them into ours. Nothing leaves your account,
+and you pay no duplicate storage.
+
+This needs a grant the reader role above cannot provide. Athena reads S3 as the principal
+that submitted the query and cannot be handed an assumed-role session, so the cross-account
+role and its external ID never enter the read path. The bucket must therefore grant access
+in its **own** policy — a resource policy — and, when the objects are encrypted with a
+customer managed key, the key must do the same in its key policy.
+
+### Which mode to use
+
+| Your bucket | Mode | Why |
+|-------------|------|-----|
+| CloudTrail or VPC Flow Logs delivery bucket | **Merge the statements yourself** (default) | These buckets always carry AWS log-delivery statements (`cloudtrail.amazonaws.com`, `delivery.logs.amazonaws.com`). A Terraform-owned `aws_s3_bucket_policy` replaces the *whole* policy, which would silently stop your log delivery. |
+| Bucket dedicated to this integration, with no policy you rely on | `manage_bucket_policy = true` on the `terraform-aws-s3-bucket-read` submodule | Terraform reads the current policy and merges into it, so nothing pre-existing is dropped. |
+
+The default mode is the safe one and is what the root module uses: it creates **no** bucket
+or key policy resource, it only renders the statements you need.
+
+### Default mode: apply the rendered statements yourself
+
+After `terraform apply`, read the statements out of the outputs:
+
+```bash
+terraform output -json inplace_query_bucket_policy_statements
+terraform output -json inplace_query_kms_key_policy_statements
+```
+
+Each value is a complete policy document whose statements you paste into the bucket's
+existing policy (and, if the bucket is encrypted, into the key's existing policy). The
+bucket grant looks like this — `REPLACE_WITH_*` placeholders are filled in for you by the
+output:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CxMInPlaceGetObject",
+      "Effect": "Allow",
+      "Principal": { "AWS": "arn:aws:iam::REPLACE_WITH_CXM_ACCOUNT_ID:root" },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::REPLACE_WITH_BUCKET_NAME/AWSLogs/*"
+    },
+    {
+      "Sid": "CxMInPlaceListBucket",
+      "Effect": "Allow",
+      "Principal": { "AWS": "arn:aws:iam::REPLACE_WITH_CXM_ACCOUNT_ID:root" },
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::REPLACE_WITH_BUCKET_NAME",
+      "Condition": { "StringLike": { "s3:prefix": "AWSLogs/*" } }
+    },
+    {
+      "Sid": "CxMInPlaceGetBucketLocation",
+      "Effect": "Allow",
+      "Principal": { "AWS": "arn:aws:iam::REPLACE_WITH_CXM_ACCOUNT_ID:root" },
+      "Action": "s3:GetBucketLocation",
+      "Resource": "arn:aws:s3:::REPLACE_WITH_BUCKET_NAME"
+    }
+  ]
+}
+```
+
+And the key grant:
+
+```json
+{
+  "Sid": "CxMInPlaceDecrypt",
+  "Effect": "Allow",
+  "Principal": { "AWS": "arn:aws:iam::REPLACE_WITH_CXM_ACCOUNT_ID:root" },
+  "Action": ["kms:Decrypt", "kms:DescribeKey"],
+  "Resource": "*"
+}
+```
+
+Three points worth keeping when you adapt this:
+
+- **Keep the three statements separate.** `s3:GetBucketLocation` does not support the
+  `s3:prefix` condition key, so folding it in with `s3:ListBucket` makes AWS reject the
+  whole policy as `MalformedPolicy`. A rejected `put-bucket-policy` leaves the previous
+  policy in place, which looks like success — always read the policy back afterwards.
+- **Do not add an `aws:CalledVia` condition.** Athena does not populate `aws:CalledVia` on
+  its scan requests, so the condition denies the very queries you are enabling.
+- **The principal is the CXM account, not a role.** Access is narrowed by object prefix
+  instead. Our submitting roles are named per tenant and per service, so naming them would
+  break your policy every time one is renamed.
+
+### Opt-in mode: let Terraform own the policy
+
+Only for a bucket dedicated to this integration. Call the submodule directly:
+
+```hcl
+module "cxm_dedicated_bucket" {
+  source = "cxmlabs/cxm-integration/aws//terraform-aws-s3-bucket-read"
+
+  cxm_aws_account_id   = "REPLACE_WITH_CXM_ACCOUNT_ID"
+  iam_role_external_id = "REPLACE_WITH_CXM_EXTERNAL_ID"
+  s3_bucket_name       = "REPLACE_WITH_BUCKET_NAME"
+
+  manage_bucket_policy = true
+
+  # Set to false only for a bucket that has no policy at all.
+  # merge_existing_bucket_policy = true
+
+  # Encrypted bucket: hand in the key's current policy so it is merged, not replaced.
+  # s3_bucket_kms_key_arn        = "REPLACE_WITH_KMS_KEY_ARN"
+  # manage_kms_key_policy        = true
+  # existing_kms_key_policy_json = file("current-key-policy.json")
+}
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `manage_bucket_policy` | `false` | Let Terraform own the bucket policy. |
+| `merge_existing_bucket_policy` | `true` | Read the bucket's current policy and merge into it. Set to `false` only when the bucket has no policy — the read fails otherwise. |
+| `inplace_query_object_prefix` | `"AWSLogs"` | Object key prefix the grant is narrowed to. |
+| `manage_kms_key_policy` | `false` | Let Terraform own the key policy of `s3_bucket_kms_key_arn`. |
+| `existing_kms_key_policy_json` | `null` | The key's current policy. Required with `manage_kms_key_policy` — AWS exposes no data source for a key policy, and replacing one without its administrative statements makes the key unmanageable. |
+
+> **Drift warning.** If anything else also manages that bucket policy — another Terraform
+> configuration, a CloudFormation stack, a console edit — the two will fight: each apply
+> re-reads the current policy and merges into it, so an out-of-band statement survives, but
+> an out-of-band *removal* of a CXM statement is silently restored and vice versa. Keep a
+> single owner per bucket policy.
+
+---
+
 ## Optional Configuration
 
 These variables can be added to any scenario above:
