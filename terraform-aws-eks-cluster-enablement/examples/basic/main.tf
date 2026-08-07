@@ -58,7 +58,10 @@ module "cxm_eks_enablement" {
   source = "../.."
 
   cluster_name = var.cluster_name
-  iam_role_arn = module.cxm_integration.cxm_iam_role_arn # Automatically selects the right role
+  # The CXM role that exists in this cluster's own account. For a lone-account deployment
+  # that is the single CXM role; for an Organization it is the member-account asset-crawler.
+  # `cxm_iam_role_arn` is not an output of the parent module - do not use it.
+  iam_role_arn = module.cxm_integration.cxm_eks_iam_role_name
 
   # Module automatically detects cluster capabilities and uses appropriate method
 

@@ -440,17 +440,57 @@ The module automatically detects whether your cluster supports modern **EKS acce
 - [ ] EKS cluster exists
 - [ ] Kubernetes provider configured to authenticate with the cluster
 
+### Which IAM role to grant access to
+
+> **This is the single most common mistake — read it before writing any HCL.**
+>
+> CXM reaches your cluster through a **two-hop assume-role chain**:
+>
+> 1. **Hop 1** — CXM assumes the **organization crawler** in your management account. Used only to enumerate the Organization.
+> 2. **Hop 2** — from that session, CXM assumes the **asset crawler** in the account that owns the cluster. **This is the identity that authenticates to the Kubernetes API server.**
+>
+> The EKS access entry must therefore name the **asset-crawler role in the cluster's own account**, exposed as the `cxm_eks_iam_role_name` output.
+>
+> Granting the access entry to the organization crawler instead looks correct — the role exists, the policy attaches, `terraform apply` succeeds — but every crawl then fails at runtime with:
+>
+> ```
+> namespaces is forbidden: User "arn:aws:iam::<cluster-account>:role/cxm-asset-crawler"
+> cannot list resource "namespaces" in API group "" at the cluster scope
+> ```
+>
+> Note that the error names the role that *should* have had the entry.
+>
+> | Deployment | Role to use | Lives in |
+> |---|---|---|
+> | Organization | `cxm-asset-crawler` (`cxm_eks_iam_role_name`) | every member account |
+> | Lone account | the single CXM role (`cxm_eks_iam_role_name`) | that account |
+>
+> Do not use `cxm_iam_role_name` here — for an Organization deployment that is the hop-1 organization crawler.
+
 ### Step 1: Add the EKS enablement module
 
-Add this alongside your existing CXM integration:
+Add this alongside your existing CXM integration. The module's `aws` provider must point at **the account that owns the cluster**, not the management account:
 
 ```hcl
+# Provider for the account owning the cluster. In an Organization deployment this is a
+# member account, so assume into it. For a lone-account deployment, drop the assume_role.
+provider "aws" {
+  alias  = "cluster_account"
+  region = var.aws_region
+
+  assume_role {
+    role_arn = "arn:aws:iam::${var.cluster_account_id}:role/OrganizationAccountAccessRole"
+  }
+}
+
 data "aws_eks_cluster" "my_cluster" {
-  name = "my-production-cluster"
+  provider = aws.cluster_account
+  name     = "my-production-cluster"
 }
 
 data "aws_eks_cluster_auth" "my_cluster" {
-  name = "my-production-cluster"
+  provider = aws.cluster_account
+  name     = "my-production-cluster"
 }
 
 provider "kubernetes" {
@@ -462,8 +502,15 @@ provider "kubernetes" {
 module "cxm_eks_enablement" {
   source = "cxmlabs/cxm-integration/aws//terraform-aws-eks-cluster-enablement"
 
+  providers = {
+    aws        = aws.cluster_account
+    kubernetes = kubernetes
+  }
+
   cluster_name = "my-production-cluster"
-  iam_role_arn = module.cxm_integration.cxm_iam_role_name
+
+  # The asset-crawler role, resolved in the cluster's own account. See the note above.
+  iam_role_arn = module.cxm_integration.cxm_eks_iam_role_name
 
   tags = {
     "ManagedBy" = "terraform"
@@ -491,6 +538,30 @@ Check these outputs:
 - `access_entry_created` - Should be `true` for modern clusters
 - `aws_auth_configmap_updated` - Should be `true` for legacy clusters
 
+Then confirm the entry landed on the right principal — this is what catches the mistake described above:
+
+```bash
+# Run against the CLUSTER'S account. The principal must be the asset-crawler
+# in THIS account, not a role from the management account.
+aws eks list-access-entries --cluster-name my-production-cluster
+
+aws eks describe-access-entry \
+  --cluster-name my-production-cluster \
+  --principal-arn arn:aws:iam::<cluster-account-id>:role/cxm-asset-crawler
+```
+
+If `describe-access-entry` returns `ResourceNotFoundException` for the asset-crawler while `list-access-entries` shows an organization-crawler ARN from a different account, the wrong role was granted access. Create the correct entry and remove the wrong one:
+
+```bash
+aws eks create-access-entry --cluster-name my-production-cluster \
+  --principal-arn arn:aws:iam::<cluster-account-id>:role/cxm-asset-crawler --type STANDARD
+
+aws eks associate-access-policy --cluster-name my-production-cluster \
+  --principal-arn arn:aws:iam::<cluster-account-id>:role/cxm-asset-crawler \
+  --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminViewPolicy \
+  --access-scope type=cluster
+```
+
 ### Namespace-scoped access (optional)
 
 To restrict CXM to specific namespaces instead of cluster-wide access:
@@ -499,8 +570,13 @@ To restrict CXM to specific namespaces instead of cluster-wide access:
 module "cxm_eks_enablement" {
   source = "cxmlabs/cxm-integration/aws//terraform-aws-eks-cluster-enablement"
 
+  providers = {
+    aws        = aws.cluster_account
+    kubernetes = kubernetes
+  }
+
   cluster_name            = "my-production-cluster"
-  iam_role_arn            = module.cxm_integration.cxm_iam_role_name
+  iam_role_arn            = module.cxm_integration.cxm_eks_iam_role_name
   access_scope_type       = "namespace"
   access_scope_namespaces = ["monitoring", "logging", "kube-system"]
 }

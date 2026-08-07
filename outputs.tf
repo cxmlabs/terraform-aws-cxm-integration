@@ -15,7 +15,29 @@ output "cxm_iam_role_name" {
     length(module.enable_lone_account) > 0 ? module.enable_lone_account[0].iam_role_name : null,
     length(module.enable_root_organization) > 0 ? module.enable_root_organization[0].iam_role_name : null
   )
-  description = "Name of the CXM IAM role (automatically selects between lone account or organization deployment)"
+  description = <<-EOT
+    Name of the CXM IAM role deployed in the root account (organization crawler, or the
+    lone-account role). NOT the role to use for EKS cluster enablement in an Organization
+    deployment - see cxm_eks_iam_role_name.
+  EOT
+}
+
+# The role EKS cluster enablement must target. In an Organization deployment the crawler
+# reaches the Kubernetes API as the member-account asset-crawler role (the organization
+# crawler is only the jump role used for the first assume-role hop), so the EKS access
+# entry must name the asset-crawler in the cluster's own account. In a lone-account
+# deployment there is only one role and it is the same one.
+output "cxm_eks_iam_role_name" {
+  value = coalesce(
+    length(module.enable_sub_accounts) > 0 ? module.enable_sub_accounts[0].iam_role_name : null,
+    length(module.enable_lone_account) > 0 ? module.enable_lone_account[0].iam_role_name : null
+  )
+  description = "Name of the CXM IAM role to grant EKS cluster access to. Deployed in every member account (Organization) or in the single account (lone account). Pass this to terraform-aws-eks-cluster-enablement, resolved against the cluster's own account."
+}
+
+output "member_account_iam_role_name" {
+  value       = length(module.enable_sub_accounts) > 0 ? module.enable_sub_accounts[0].iam_role_name : null
+  description = "Name of the CXM asset-crawler IAM role deployed by the StackSet into every member account. Null for lone-account deployments."
 }
 
 # Deployment regions and accounts
