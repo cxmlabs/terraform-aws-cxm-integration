@@ -12,15 +12,15 @@ It also forbids CXM to access any customer data other than cloud usage & metrics
 ### Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | terraform | >= 1.5.0 |
 | aws | >= 3.74.0 |
 
 ### Providers
 
 | Name | Version |
-|------|---------|
-| aws | >= 3.74.0 |
+| ---- | ------- |
+| aws | 6.58.0 |
 
 ### Modules
 
@@ -29,14 +29,15 @@ No modules.
 ### Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [aws_cloudformation_stack_set.cxm_account_enablement](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudformation_stack_set) | resource |
 | [aws_cloudformation_stack_set_instance.cxm_account_enablement](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudformation_stack_set_instance) | resource |
+| [aws_organizations_organization.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/organizations_organization) | data source |
 
 ### Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access. | `string` | n/a | yes |
 | cxm_external_id | External ID to use in the trust relationship. | `string` | n/a | yes |
 | cxm_admin_role_arn | The ARN of the role created in the AWS Organizations root account that will be used as a relay. | `string` | n/a | yes |
@@ -44,11 +45,12 @@ No modules.
 | prefix | Prefix to use for all resources created by this module. | `string` | `"cxm"` | no |
 | stack_and_role_suffix | Suffix to use for the cloudformation stack. | `string` | `null` | no |
 | enable_scheduling | Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default. | `bool` | `false` | no |
+| enable_savings_modifications | Enable savings plan and RI modifications (purchase, modify, cancel, etc.). Setting this to true to preserve existing behavior. | `bool` | `true` | no |
 
 ### Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | cxm_external_id | External ID to use in the trust relationship. |
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access. |
 | prefix | Prefix to use for all resources created by this module. |

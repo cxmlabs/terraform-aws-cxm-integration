@@ -13,9 +13,11 @@ module "enable_root_organization" {
   cxm_external_id    = var.cxm_external_id
   prefix             = local.prefix
   # This role name will be prefixed by local.prefix when deployed
-  iam_role_name           = "organization-crawler${local.role_suffix}"
-  permission_boundary_arn = var.permission_boundary_arn
-  tags                    = local.tags
+  iam_role_name                = "organization-crawler${local.role_suffix}"
+  permission_boundary_arn      = var.permission_boundary_arn
+  disable_stackset_deployment  = var.disable_stackset_deployment
+  enable_savings_modifications = var.enable_savings_modifications
+  tags                         = local.tags
 }
 
 module "enable_sub_accounts" {
@@ -27,13 +29,14 @@ module "enable_sub_accounts" {
     aws = aws.root
   }
 
-  prefix                = local.prefix
-  cxm_aws_account_id    = var.cxm_aws_account_id
-  cxm_external_id       = var.cxm_external_id
-  deployment_targets    = var.deployment_targets
-  cxm_admin_role_arn    = module.enable_root_organization[0].iam_role_arn
-  stack_and_role_suffix = var.role_suffix
-  enable_scheduling     = local.enable_scheduling
+  prefix                       = local.prefix
+  cxm_aws_account_id           = var.cxm_aws_account_id
+  cxm_external_id              = var.cxm_external_id
+  deployment_targets           = var.deployment_targets
+  cxm_admin_role_arn           = module.enable_root_organization[0].iam_role_arn
+  stack_and_role_suffix        = var.role_suffix
+  enable_scheduling            = local.enable_scheduling
+  enable_savings_modifications = var.enable_savings_modifications
   #tags                 = var.tags
 }
 
@@ -51,10 +54,11 @@ module "enable_lone_account" {
   cxm_external_id    = var.cxm_external_id
   prefix             = local.prefix
   # This role name will be prefixed by local.prefix when deployed
-  iam_role_name           = "organization-crawler${local.role_suffix}"
-  permission_boundary_arn = var.permission_boundary_arn
-  enable_scheduling       = local.enable_scheduling
-  tags                    = local.tags
+  iam_role_name                = "organization-crawler${local.role_suffix}"
+  permission_boundary_arn      = var.permission_boundary_arn
+  enable_scheduling            = local.enable_scheduling
+  enable_savings_modifications = var.enable_savings_modifications
+  tags                         = local.tags
 }
 
 # COST USAGE REPORT
