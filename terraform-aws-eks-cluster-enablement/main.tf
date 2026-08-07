@@ -2,6 +2,9 @@ locals {
   # Extract role name from ARN if provided as ARN, otherwise use as-is
   iam_role_name = can(regex("^arn:aws:iam::", var.iam_role_arn)) ? element(split("/", var.iam_role_arn), length(split("/", var.iam_role_arn)) - 1) : var.iam_role_arn
 
+  # Account embedded in var.iam_role_arn when an ARN was supplied, else null.
+  supplied_role_account_id = can(regex("^arn:aws:iam::", var.iam_role_arn)) ? split(":", var.iam_role_arn)[4] : null
+
   # Check if the cluster supports access entries (EKS API version 2023-10-14 or later)
   # This is determined by checking if the cluster has the access_config block
   cluster_supports_access_entries = try(data.aws_eks_cluster.cluster.access_config[0].authentication_mode != null, false)
@@ -18,6 +21,27 @@ check "namespace_scope_validation" {
 # Data source to get information about the EKS cluster
 data "aws_eks_cluster" "cluster" {
   name = var.cluster_name
+}
+
+data "aws_caller_identity" "current" {}
+
+# The role is always resolved by NAME in the account this module's aws provider points at
+# (which is the cluster's account). If the caller passes an ARN from a DIFFERENT account -
+# typically the management account's organization crawler - the lookup silently resolves a
+# same-named role in the cluster account instead, or fails with a confusing "role not
+# found". Either way the resulting access entry names the wrong principal and every
+# Kubernetes call is rejected at runtime. Fail loudly at plan time instead.
+resource "terraform_data" "iam_role_account_guard" {
+  lifecycle {
+    precondition {
+      condition = local.supplied_role_account_id == null || local.supplied_role_account_id == data.aws_caller_identity.current.account_id
+      error_message = join("", [
+        "iam_role_arn points at account ${local.supplied_role_account_id} but this module is configured against account ${data.aws_caller_identity.current.account_id} (the cluster's account). ",
+        "The EKS access entry must name the CXM role that exists IN THE CLUSTER'S OWN ACCOUNT - that is the identity which reaches the Kubernetes API. ",
+        "In an Organization deployment that is the asset-crawler role (see the cxm_eks_iam_role_name output of the parent module), not the management account's organization crawler, which is only used for the first assume-role hop."
+      ])
+    }
+  }
 }
 
 # Data source to get the IAM role information

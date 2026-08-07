@@ -132,13 +132,23 @@ For enabling CXM access to existing EKS clusters, use the dedicated EKS cluster 
 module "cxm_eks_enablement" {
   source = "./terraform-aws-eks-cluster-enablement"
 
+  # The aws provider MUST point at the account that owns the cluster.
+  providers = {
+    aws        = aws.cluster_account
+    kubernetes = kubernetes
+  }
+
   cluster_name = "my-production-cluster"
-  # Use the IAM role from the CXM integration module
-  iam_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${module.cxm-integration.iam_role_name}"  # Construct ARN from account ID and role name
+
+  # The asset-crawler role, which lives in the cluster's own account. This is the identity
+  # that reaches the Kubernetes API server. Do NOT use cxm_iam_role_name - in an
+  # Organization deployment that is the management account's organization crawler, which is
+  # only the first hop of the assume-role chain.
+  iam_role_arn = module.cxm-integration.cxm_eks_iam_role_name
 }
 ```
 
-This module automatically detects whether your EKS cluster supports modern access entries or requires the legacy aws-auth ConfigMap approach. The `cxm_iam_role_arn` output automatically selects the appropriate IAM role based on your deployment type (lone account vs organization). For detailed usage instructions, examples, and configuration options, see the [EKS cluster enablement module documentation](https://github.com/cxmlabs/terraform-aws-cxm-integration/tree/main/terraform-aws-eks-cluster-enablement).
+This module automatically detects whether your EKS cluster supports modern access entries or requires the legacy aws-auth ConfigMap approach. The `cxm_eks_iam_role_name` output selects the appropriate IAM role for your deployment type: the member-account asset-crawler for an Organization, the single role for a lone account. Getting this role wrong is the most common integration failure — `terraform apply` succeeds and the crawl then fails at runtime — so see the [EKS section of the deployment guide](https://github.com/cxmlabs/terraform-aws-cxm-integration/blob/main/GUIDE.md#which-iam-role-to-grant-access-to) for the reasoning, and the [EKS cluster enablement module documentation](https://github.com/cxmlabs/terraform-aws-cxm-integration/tree/main/terraform-aws-eks-cluster-enablement) for full options.
 
 ### About providers
 
@@ -253,7 +263,9 @@ provider "aws" {
 | ---- | ----------- |
 | lone_account_iam_role_arn | ARN of the CXM IAM role for lone account deployment |
 | organization_iam_role_arn | ARN of the CXM IAM role for organization root deployment |
-| cxm_iam_role_name | Name of the CXM IAM role (automatically selects between lone account or organization deployment) |
+| cxm_iam_role_name | Name of the CXM IAM role deployed in the root account (organization crawler, or the lone-account role). NOT the role to use for EKS cluster enablement in an Organization deployment - see cxm_eks_iam_role_name. |
+| cxm_eks_iam_role_name | Name of the CXM IAM role to grant EKS cluster access to. Deployed in every member account (Organization) or in the single account (lone account). Pass this to terraform-aws-eks-cluster-enablement, resolved against the cluster's own account. |
+| member_account_iam_role_name | Name of the CXM asset-crawler IAM role deployed by the StackSet into every member account. Null for lone-account deployments. |
 | root_account_id | AWS account ID used for the root (management or lone account) deployment |
 | root_region | AWS region used for the root deployment (organization crawler and EventBridge rules) |
 | cur_account_id | AWS account ID where the CUR reader role is deployed |

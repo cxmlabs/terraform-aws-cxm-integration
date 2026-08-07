@@ -39,7 +39,7 @@ module "cxm_eks_enablement" {
   source = "./terraform-aws-eks-cluster-enablement"
 
   cluster_name = "my-production-cluster"
-  iam_role_arn = module.cxm_integration.cxm_iam_role_arn
+  iam_role_arn = module.cxm_integration.cxm_eks_iam_role_name
 
   # Module automatically detects and uses appropriate access method
 
@@ -49,6 +49,17 @@ module "cxm_eks_enablement" {
   }
 }
 ```
+
+> **Which role?** Grant access to the CXM role that lives in **the cluster's own account** —
+> `cxm_eks_iam_role_name`. CXM reaches the Kubernetes API through a two-hop assume-role
+> chain, and it is the second hop (the member-account `cxm-asset-crawler`) that
+> authenticates to the API server. The management account's organization crawler
+> (`cxm_iam_role_name`) is only the first hop; granting it the access entry applies cleanly
+> and then fails at runtime with `namespaces is forbidden: User
+> "arn:aws:iam::<cluster-account>:role/cxm-asset-crawler" cannot list resource "namespaces"`.
+> This module's `aws` provider must also point at the cluster's account; if you pass an ARN
+> from a different account the plan now fails with an explanatory error rather than creating
+> a silently useless access entry.
 
 ### Advanced Usage with Namespace Scoping
 
@@ -123,15 +134,16 @@ To upgrade a legacy cluster to use access entries:
 ### Requirements
 
 | Name | Version |
-|------|---------|
-| terraform | >= 1.0 |
+| ---- | ------- |
+| terraform | >= 1.5 |
 | aws | >= 5.0 |
 | kubernetes | >= 2.20 |
 
 ### Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
+| terraform | n/a |
 | aws | 6.13.0 |
 | kubernetes | 2.38.0 |
 
@@ -142,10 +154,12 @@ No modules.
 ### Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [aws_eks_access_entry.cxm_access_entry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_access_entry) | resource |
 | [aws_eks_access_policy_association.cxm_view_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_access_policy_association) | resource |
 | [kubernetes_config_map_v1_data.aws_auth](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map_v1_data) | resource |
+| [terraform_data.iam_role_account_guard](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_cluster) | data source |
 | [aws_iam_role.cxm_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_role) | data source |
 | [kubernetes_config_map_v1.aws_auth](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/data-sources/config_map_v1) | data source |
@@ -153,9 +167,9 @@ No modules.
 ### Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | cluster_name | Name of the EKS cluster to configure access for | `string` | n/a | yes |
-| iam_role_arn | ARN or name of the IAM role created by the CXM account enablement module (e.g., output from terraform-aws-account-enablement module) | `string` | n/a | yes |
+| iam_role_arn | ARN or name of the CXM IAM role to grant cluster access to. This MUST be the role that exists in the cluster's own AWS account - it is the identity that reaches the Kubernetes API server.  Organization deployment: use the asset-crawler role deployed into every member account by the StackSet, i.e. the parent module's `cxm_eks_iam_role_name` output. Do NOT use the management account's organization crawler; that role is only the first hop of the assume-role chain and granting it the access entry leaves the crawler unauthorized.  Lone-account deployment: there is a single role and it is the same one - `cxm_eks_iam_role_name` still resolves correctly.  A bare name is accepted and resolved against this module's provider account. If an ARN is supplied its account must match that provider account, otherwise the plan fails. | `string` | n/a | yes |
 | kubernetes_groups | List of Kubernetes groups to assign to the IAM role. Only used for aws-auth ConfigMap method. | `list(string)` | `[]` | no |
 | access_scope_type | Type of access scope for the policy association. Valid values: 'cluster' or 'namespace' | `string` | `"cluster"` | no |
 | access_scope_namespaces | List of namespaces for the access scope when access_scope_type is 'namespace'. Required when access_scope_type is 'namespace'. | `list(string)` | `[]` | no |
@@ -164,7 +178,7 @@ No modules.
 ### Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | cluster_name | Name of the EKS cluster that was configured |
 | cluster_endpoint | Endpoint URL of the EKS cluster |
 | cluster_account_id | AWS Account ID where the EKS cluster is located |

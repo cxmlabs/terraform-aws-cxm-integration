@@ -152,8 +152,12 @@ module "cxm_production_eks_enablement" {
   for_each = toset(var.production_cluster_names)
 
   cluster_name = each.value
-  # Construct IAM role ARN from account ID and role name
-  iam_role_arn = "arn:aws:iam::${data.aws_caller_identity.production.account_id}:role/${module.cxm_integration.cxm_iam_role_name}"
+
+  # The member-account asset-crawler. This is the hop-2 identity that authenticates to the
+  # Kubernetes API server. cxm_iam_role_name is the management account's organization
+  # crawler (hop 1) and does not exist in this account - granting it access entries here
+  # leaves every crawl unauthorized at runtime.
+  iam_role_arn = module.cxm_integration.cxm_eks_iam_role_name
 
   # Production clusters get cluster-wide view access
   access_scope_type = "cluster"
@@ -183,8 +187,9 @@ module "cxm_staging_eks_enablement" {
   for_each = toset(var.staging_cluster_names)
 
   cluster_name = each.value
-  # Construct IAM role ARN from account ID and role name
-  iam_role_arn = "arn:aws:iam::${data.aws_caller_identity.staging.account_id}:role/${module.cxm_integration.cxm_iam_role_name}"
+
+  # Member-account asset-crawler - see the note on the production block above.
+  iam_role_arn = module.cxm_integration.cxm_eks_iam_role_name
 
   # Staging clusters get namespace-scoped access for security
   access_scope_type       = "namespace"

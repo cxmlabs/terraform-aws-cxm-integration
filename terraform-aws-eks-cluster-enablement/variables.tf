@@ -7,7 +7,22 @@ variable "cluster_name" {
 
 variable "iam_role_arn" {
   type        = string
-  description = "ARN or name of the IAM role created by the CXM account enablement module (e.g., output from terraform-aws-account-enablement module)"
+  description = <<-EOT
+    ARN or name of the CXM IAM role to grant cluster access to. This MUST be the role that
+    exists in the cluster's own AWS account - it is the identity that reaches the Kubernetes
+    API server.
+
+    Organization deployment: use the asset-crawler role deployed into every member account
+    by the StackSet, i.e. the parent module's `cxm_eks_iam_role_name` output. Do NOT use the
+    management account's organization crawler; that role is only the first hop of the
+    assume-role chain and granting it the access entry leaves the crawler unauthorized.
+
+    Lone-account deployment: there is a single role and it is the same one -
+    `cxm_eks_iam_role_name` still resolves correctly.
+
+    A bare name is accepted and resolved against this module's provider account. If an ARN
+    is supplied its account must match that provider account, otherwise the plan fails.
+  EOT
 }
 
 # Optional Variables
