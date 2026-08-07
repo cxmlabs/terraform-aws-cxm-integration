@@ -2,6 +2,8 @@ locals {
   stack_and_role_suffix = var.stack_and_role_suffix != null ? "-${var.stack_and_role_suffix}" : ""
 }
 
+data "aws_organizations_organization" "current" {}
+
 resource "aws_cloudformation_stack_set" "cxm_account_enablement" {
   name = "${var.prefix}-account-enablement${local.stack_and_role_suffix}"
   auto_deployment {
@@ -12,12 +14,14 @@ resource "aws_cloudformation_stack_set" "cxm_account_enablement" {
   permission_model = "SERVICE_MANAGED"
 
   parameters = {
-    Prefix            = var.prefix
-    CXMExternalID     = var.cxm_external_id
-    CustomerAccountID = var.cxm_aws_account_id
-    AdminRoleArn      = var.cxm_admin_role_arn
-    RoleSuffix        = local.stack_and_role_suffix
-    EnableScheduling  = var.enable_scheduling ? "true" : "false"
+    Prefix                     = var.prefix
+    CXMExternalID              = var.cxm_external_id
+    CustomerAccountID          = var.cxm_aws_account_id
+    AdminRoleArn               = var.cxm_admin_role_arn
+    RoleSuffix                 = local.stack_and_role_suffix
+    EnableScheduling           = var.enable_scheduling ? "true" : "false"
+    EnableSavingsModifications = var.enable_savings_modifications ? "true" : "false"
+    OrganizationID             = data.aws_organizations_organization.current.id
   }
 
   template_body = file("${path.module}/cxm-aws-account-enablement.yaml")

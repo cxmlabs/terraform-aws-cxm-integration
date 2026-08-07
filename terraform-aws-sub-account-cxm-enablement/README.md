@@ -172,6 +172,8 @@ aws organizations list-accounts \
 | `prefix` | Prefix for all resource names | `string` | `"cxm"` | no |
 | `role_suffix` | Suffix appended to IAM role names | `string` | `""` | no |
 | `enable_scheduling` | Enable scheduling/scaling permissions for FinOps cost optimization | `bool` | `false` | no |
+| `enable_savings_modifications` | Enable savings plan and RI modifications (purchase, modify, cancel, etc.) | `bool` | `false` | no |
+| `xacct_assume_role_org_id` | Optional AWS Organization ID restricting which org the admin role may assume from. If unset, only the admin role ARN is trusted | `string` | `null` | no |
 | `permission_boundary_arn` | ARN of a permissions boundary policy for created IAM roles | `string` | `null` | no |
 | `tags` | Tags to apply to all resources | `map(string)` | `{}` | no |
 

@@ -59,6 +59,13 @@ variable "enable_scheduling" {
   description = "Enable scheduling and scaling permissions for FinOps cost optimization (stop/start EC2, RDS, scale ECS, ASG, etc.). Disabled by default."
 }
 
+variable "enable_savings_modifications" {
+  type = bool
+  # Setting this to true to preserve existing behavior
+  default     = true
+  description = "Enable savings plan and RI modifications (purchase, modify, cancel, etc.)."
+}
+
 variable "tags" {
   type        = map(string)
   description = "A map/dictionary of Tags to be assigned to created resources."
