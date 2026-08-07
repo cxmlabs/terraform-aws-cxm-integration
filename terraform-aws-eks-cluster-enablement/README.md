@@ -55,11 +55,11 @@ module "cxm_eks_enablement" {
 > chain, and it is the second hop (the member-account `cxm-asset-crawler`) that
 > authenticates to the API server. The management account's organization crawler
 > (`cxm_iam_role_name`) is only the first hop; granting it the access entry applies cleanly
-> and then fails at runtime with `namespaces is forbidden: User
-> "arn:aws:iam::<cluster-account>:role/cxm-asset-crawler" cannot list resource "namespaces"`.
-> This module's `aws` provider must also point at the cluster's account; if you pass an ARN
-> from a different account the plan now fails with an explanatory error rather than creating
-> a silently useless access entry.
+> and reports no error, but CXM is then never able to read the cluster. Verify with
+> `aws eks describe-access-entry --cluster-name <cluster> --principal-arn <asset-crawler-arn>`
+> in the cluster's account. This module's `aws` provider must also point at the cluster's
+> account; if you pass an ARN from a different account the plan fails with an explanatory
+> error rather than creating a silently useless access entry.
 
 ### Advanced Usage with Namespace Scoping
 
