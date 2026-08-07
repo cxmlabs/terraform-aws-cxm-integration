@@ -451,14 +451,7 @@ The module automatically detects whether your cluster supports modern **EKS acce
 >
 > The EKS access entry must therefore name the **asset-crawler role in the cluster's own account**, exposed as the `cxm_eks_iam_role_name` output.
 >
-> Granting the access entry to the organization crawler instead looks correct — the role exists, the policy attaches, `terraform apply` succeeds — but every crawl then fails at runtime with:
->
-> ```
-> namespaces is forbidden: User "arn:aws:iam::<cluster-account>:role/cxm-asset-crawler"
-> cannot list resource "namespaces" in API group "" at the cluster scope
-> ```
->
-> Note that the error names the role that *should* have had the entry.
+> Granting the access entry to the organization crawler instead looks correct — the role exists, the policy attaches, `terraform apply` succeeds, and nothing reports an error. The mistake surfaces only as Kubernetes data never appearing in CXM. Confirm the entry with the [verification step](#step-3-verify) rather than waiting to find out.
 >
 > | Deployment | Role to use | Lives in |
 > |---|---|---|
