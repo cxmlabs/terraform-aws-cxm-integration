@@ -152,6 +152,17 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
   }
 
   statement {
+    # ReadOnlyAccess lags behind newer bedrock list APIs; the management account's own
+    # assets are inventoried with this role, so it needs the same grant as sub-accounts.
+    sid = "BedrockInventoryPermissions"
+    actions = [
+      "bedrock:List*",
+      "bedrock:Get*",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
     # Understand users and groups in the organization
     sid = "SSOReadOnlyAccess"
     actions = [

@@ -101,6 +101,16 @@ data "aws_iam_policy_document" "cxm_read_only_policy" {
   }
 
   statement {
+    # ReadOnlyAccess lags behind newer bedrock list APIs, so grant them explicitly.
+    sid = "BedrockInventoryPermissions"
+    actions = [
+      "bedrock:List*",
+      "bedrock:Get*",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
     # Explicitly removing read access to S3 objects
     sid           = "ExplicitDenyOnS3Files"
     effect        = "Deny"
