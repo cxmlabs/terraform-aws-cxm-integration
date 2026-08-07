@@ -35,8 +35,13 @@ resource "terraform_data" "iam_role_account_guard" {
   lifecycle {
     precondition {
       condition = local.supplied_role_account_id == null || local.supplied_role_account_id == data.aws_caller_identity.current.account_id
+      # The coalesce is load-bearing: Terraform evaluates a precondition's error_message
+      # template eagerly, even when the condition passes, and interpolating a null is a hard
+      # error. Without it every bare role name - the documented primary usage - fails the plan.
+      # The fallback itself is unreachable: the message only renders when the condition fails,
+      # which requires a non-null supplied_role_account_id.
       error_message = join("", [
-        "iam_role_arn points at account ${local.supplied_role_account_id} but this module is configured against account ${data.aws_caller_identity.current.account_id} (the cluster's account). ",
+        "iam_role_arn points at account ${coalesce(local.supplied_role_account_id, "unknown")} but this module is configured against account ${data.aws_caller_identity.current.account_id} (the cluster's account). ",
         "The EKS access entry must name the CXM role that exists IN THE CLUSTER'S OWN ACCOUNT - that is the identity which reaches the Kubernetes API. ",
         "In an Organization deployment that is the asset-crawler role (see the cxm_eks_iam_role_name output of the parent module), not the management account's organization crawler, which is only used for the first assume-role hop."
       ])
