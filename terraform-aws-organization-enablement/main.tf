@@ -90,6 +90,8 @@ data "aws_iam_policy_document" "cxm_organization_read_only_policy" {
       "ce:Describe*",
       "ce:Get*",
       "ce:List*",
+      # Authoritative per-account RI/SP discount-sharing toggle (CUR can only infer it)
+      "billing:GetBillingPreferences",
       "ec2:DescribeRegions",
       "ec2:DescribeAccountAttributes",
     ]
