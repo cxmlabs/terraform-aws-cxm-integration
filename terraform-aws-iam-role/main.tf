@@ -1,10 +1,8 @@
 locals {
   principal = var.cxm_role_name != null ? "arn:aws:iam::${var.cxm_aws_account_id}:role/${var.cxm_role_name}" : "arn:aws:iam::${var.cxm_aws_account_id}:root"
 
-  # One statement per reader: external IDs differ per CXM tenant, and a single StringEquals
-  # condition with several values is an OR that would let any reader use any external ID.
-  # Additional readers are always account-delegated (:root) — cxm_role_name narrows the
-  # primary reader only.
+  # One statement per reader: StringEquals with several external IDs is an OR, letting any
+  # reader in with any ID. Additional readers are :root; cxm_role_name narrows the primary.
   additional_principals = [
     for reader in var.additional_cxm_readers : {
       principal   = "arn:aws:iam::${reader.account_id}:root"
