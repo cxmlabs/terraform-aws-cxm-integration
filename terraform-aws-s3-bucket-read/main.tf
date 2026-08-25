@@ -21,6 +21,7 @@ module "cxm_cfg_iam_role" {
   permission_boundary_arn = var.permission_boundary_arn
   cxm_aws_account_id      = var.cxm_aws_account_id
   cxm_role_name           = var.cxm_role_name
+  additional_cxm_readers  = var.additional_cxm_readers
   tags                    = var.tags
 }
 

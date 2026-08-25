@@ -120,3 +120,12 @@ variable "tags" {
   description = "A map/dictionary of Tags to be assigned to created resources"
   default     = {}
 }
+
+variable "additional_cxm_readers" {
+  type = list(object({
+    account_id  = string
+    external_id = string
+  }))
+  default     = []
+  description = "Extra Cloud ex Machina accounts that read the CUR, CloudTrail and Flow Logs buckets, each with its own external ID. Provided by CXM when more than one CXM tenant analyses the same buckets: each entry adds a trust statement on the reader roles and an in-place query statement set on the buckets."
+}

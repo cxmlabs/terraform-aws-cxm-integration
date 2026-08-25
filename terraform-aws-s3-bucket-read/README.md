@@ -20,8 +20,8 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 
 | Name | Version |
 | ---- | ------- |
-| random | 3.9.0 |
-| aws | 6.58.0 |
+| random | >= 2.1 |
+| aws | >= 3.74.0 |
 
 ### Modules
 
@@ -76,6 +76,7 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 | manage_kms_key_policy | Set to `true` to let Terraform own the KMS key policy of s3_bucket_kms_key_arn. Requires existing_kms_key_policy_json. Leave `false` to take the statement from the outputs instead. | `bool` | `false` | no |
 | existing_kms_key_policy_json | Current policy of s3_bucket_kms_key_arn, merged with the CXM decrypt statement. Required when manage_kms_key_policy is `true`: the AWS provider exposes no data source for a key policy, and replacing one without its administrative statements makes the key unmanageable. | `string` | `null` | no |
 | tags | A map/dictionary of Tags to be assigned to created resources | `map(string)` | `{}` | no |
+| additional_cxm_readers | Extra Cloud ex Machina accounts that read this bucket, each with its own external ID. Adds a trust statement on the reader role and an in-place query statement set on the bucket (and key) per entry, so several CXM tenants can share one bucket. | ```list(object({ account_id = string external_id = string }))``` | `[]` | no |
 
 ### Outputs
 
