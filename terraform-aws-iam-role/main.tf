@@ -1,25 +1,45 @@
 locals {
   principal = var.cxm_role_name != null ? "arn:aws:iam::${var.cxm_aws_account_id}:role/${var.cxm_role_name}" : "arn:aws:iam::${var.cxm_aws_account_id}:root"
+
+  # One statement per reader: external IDs differ per CXM tenant, and a single StringEquals
+  # condition with several values is an OR that would let any reader use any external ID.
+  # Additional readers are always account-delegated (:root) — cxm_role_name narrows the
+  # primary reader only.
+  additional_principals = [
+    for reader in var.additional_cxm_readers : {
+      principal   = "arn:aws:iam::${reader.account_id}:root"
+      external_id = reader.external_id
+    }
+  ]
+  trusted_readers = concat(
+    [{ principal = local.principal, external_id = var.external_id }],
+    local.additional_principals,
+  )
 }
 
 
 data "aws_iam_policy_document" "cxm_assume_role_policy" {
   count   = var.dry_run ? 0 : 1
   version = "2012-10-17"
-  statement {
-    actions = ["sts:AssumeRole"]
 
-    principals {
-      type = "AWS"
-      identifiers = [
-        local.principal
-      ]
-    }
+  dynamic "statement" {
+    for_each = local.trusted_readers
 
-    condition {
-      test     = "StringEquals"
-      variable = "sts:ExternalId"
-      values   = [var.external_id]
+    content {
+      actions = ["sts:AssumeRole"]
+
+      principals {
+        type = "AWS"
+        identifiers = [
+          statement.value.principal
+        ]
+      }
+
+      condition {
+        test     = "StringEquals"
+        variable = "sts:ExternalId"
+        values   = [statement.value.external_id]
+      }
     }
   }
 }

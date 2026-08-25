@@ -256,6 +256,7 @@ provider "aws" {
 | prefix | Optional - prefix for key constructs created by this module. | `string` | `"cxm"` | no |
 | role_suffix | Optional - suffix to append to roles names. | `string` | `null` | no |
 | tags | A map/dictionary of Tags to be assigned to created resources | `map(string)` | `{}` | no |
+| additional_cxm_readers | Extra Cloud ex Machina accounts that read the CUR, CloudTrail and Flow Logs buckets, each with its own external ID. Provided by CXM when more than one CXM tenant analyses the same buckets: each entry adds a trust statement on the reader roles and an in-place query statement set on the buckets. | ```list(object({ account_id = string external_id = string }))``` | `[]` | no |
 
 ### Outputs
 

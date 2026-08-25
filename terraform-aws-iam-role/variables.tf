@@ -36,3 +36,12 @@ variable "dry_run" {
   default     = false
   description = "Setting dry_run to `true` will prevent the module from creating new resources."
 }
+
+variable "additional_cxm_readers" {
+  type = list(object({
+    account_id  = string
+    external_id = string
+  }))
+  default     = []
+  description = "Extra Cloud ex Machina accounts allowed to assume this role, each with its own external ID. One trust statement is added per entry, so several CXM tenants can read the same bucket without a role per tenant."
+}

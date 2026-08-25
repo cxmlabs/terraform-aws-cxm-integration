@@ -10,8 +10,18 @@
 locals {
   inplace_object_prefix = "${trimsuffix(var.inplace_query_object_prefix, "/")}/"
   inplace_bucket_arn    = "arn:aws:s3:::${var.s3_bucket_name}"
-  inplace_cxm_principal = "arn:aws:iam::${var.cxm_aws_account_id}:root"
   inplace_kms_statement = var.s3_bucket_kms_key_arn != null || var.manage_kms_key_policy
+
+  # One statement per reader account, with the account id in the Sid. A bucket read by
+  # several CXM tenants gets one statement set each. The suffix is what makes them mergeable:
+  # aws_iam_policy_document rejects a duplicate Sid outright ("Remove the Sid or ensure Sids
+  # are unique"), and while PutBucketPolicy does accept duplicates, two statements sharing a
+  # Sid cannot be told apart afterwards — so one reader's grant could not be updated or
+  # revoked without touching the other's.
+  inplace_reader_accounts = distinct(concat(
+    [var.cxm_aws_account_id],
+    [for reader in var.additional_cxm_readers : reader.account_id],
+  ))
 }
 
 # Three separate statements are mandatory: s3:GetBucketLocation does not support the
@@ -22,42 +32,54 @@ locals {
 data "aws_iam_policy_document" "cxm_inplace_bucket_statements" {
   version = "2012-10-17"
 
-  statement {
-    sid       = "CxMInPlaceGetObject"
-    actions   = ["s3:GetObject"]
-    resources = ["${local.inplace_bucket_arn}/${local.inplace_object_prefix}*"]
+  dynamic "statement" {
+    for_each = local.inplace_reader_accounts
 
-    principals {
-      type        = "AWS"
-      identifiers = [local.inplace_cxm_principal]
+    content {
+      sid       = "CxMInPlaceGetObject${statement.value}"
+      actions   = ["s3:GetObject"]
+      resources = ["${local.inplace_bucket_arn}/${local.inplace_object_prefix}*"]
+
+      principals {
+        type        = "AWS"
+        identifiers = ["arn:aws:iam::${statement.value}:root"]
+      }
     }
   }
 
-  statement {
-    sid       = "CxMInPlaceListBucket"
-    actions   = ["s3:ListBucket"]
-    resources = [local.inplace_bucket_arn]
+  dynamic "statement" {
+    for_each = local.inplace_reader_accounts
 
-    principals {
-      type        = "AWS"
-      identifiers = [local.inplace_cxm_principal]
-    }
+    content {
+      sid       = "CxMInPlaceListBucket${statement.value}"
+      actions   = ["s3:ListBucket"]
+      resources = [local.inplace_bucket_arn]
 
-    condition {
-      test     = "StringLike"
-      variable = "s3:prefix"
-      values   = ["${local.inplace_object_prefix}*"]
+      principals {
+        type        = "AWS"
+        identifiers = ["arn:aws:iam::${statement.value}:root"]
+      }
+
+      condition {
+        test     = "StringLike"
+        variable = "s3:prefix"
+        values   = ["${local.inplace_object_prefix}*"]
+      }
     }
   }
 
-  statement {
-    sid       = "CxMInPlaceGetBucketLocation"
-    actions   = ["s3:GetBucketLocation"]
-    resources = [local.inplace_bucket_arn]
+  dynamic "statement" {
+    for_each = local.inplace_reader_accounts
 
-    principals {
-      type        = "AWS"
-      identifiers = [local.inplace_cxm_principal]
+    content {
+      sid       = "CxMInPlaceGetBucketLocation${statement.value}"
+      actions   = ["s3:GetBucketLocation"]
+      resources = [local.inplace_bucket_arn]
+
+      principals {
+        type        = "AWS"
+        identifiers = ["arn:aws:iam::${statement.value}:root"]
+      }
     }
   }
 }
@@ -69,14 +91,18 @@ data "aws_iam_policy_document" "cxm_inplace_kms_statement" {
   count   = local.inplace_kms_statement ? 1 : 0
   version = "2012-10-17"
 
-  statement {
-    sid       = "CxMInPlaceDecrypt"
-    actions   = ["kms:Decrypt", "kms:DescribeKey"]
-    resources = ["*"]
+  dynamic "statement" {
+    for_each = local.inplace_reader_accounts
 
-    principals {
-      type        = "AWS"
-      identifiers = [local.inplace_cxm_principal]
+    content {
+      sid       = "CxMInPlaceDecrypt${statement.value}"
+      actions   = ["kms:Decrypt", "kms:DescribeKey"]
+      resources = ["*"]
+
+      principals {
+        type        = "AWS"
+        identifiers = ["arn:aws:iam::${statement.value}:root"]
+      }
     }
   }
 }
@@ -89,14 +115,17 @@ data "aws_s3_bucket_policy" "existing" {
   bucket = var.s3_bucket_name
 }
 
+# Our statements go in override_policy_documents, not source: the second apply reads back a
+# policy that already carries them, and source_policy_documents rejects a duplicate Sid
+# outright ("duplicate Sid ... Remove the Sid or ensure Sids are unique"). override replaces
+# a same-Sid statement instead, so re-applying is idempotent and anything else in the policy
+# still survives.
 data "aws_iam_policy_document" "cxm_inplace_bucket_policy" {
   count   = var.manage_bucket_policy ? 1 : 0
   version = "2012-10-17"
 
-  source_policy_documents = concat(
-    [for existing in data.aws_s3_bucket_policy.existing : existing.policy],
-    [data.aws_iam_policy_document.cxm_inplace_bucket_statements.json],
-  )
+  source_policy_documents   = [for existing in data.aws_s3_bucket_policy.existing : existing.policy]
+  override_policy_documents = [data.aws_iam_policy_document.cxm_inplace_bucket_statements.json]
 }
 
 resource "aws_s3_bucket_policy" "cxm_inplace" {
@@ -112,10 +141,8 @@ data "aws_iam_policy_document" "cxm_inplace_kms_key_policy" {
   count   = var.manage_kms_key_policy ? 1 : 0
   version = "2012-10-17"
 
-  source_policy_documents = [
-    var.existing_kms_key_policy_json,
-    data.aws_iam_policy_document.cxm_inplace_kms_statement[0].json,
-  ]
+  source_policy_documents   = [var.existing_kms_key_policy_json]
+  override_policy_documents = [data.aws_iam_policy_document.cxm_inplace_kms_statement[0].json]
 }
 
 resource "aws_kms_key_policy" "cxm_inplace" {

@@ -751,14 +751,14 @@ output:
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "CxMInPlaceGetObject",
+      "Sid": "CxMInPlaceGetObjectREPLACE_WITH_CXM_ACCOUNT_ID",
       "Effect": "Allow",
       "Principal": { "AWS": "arn:aws:iam::REPLACE_WITH_CXM_ACCOUNT_ID:root" },
       "Action": "s3:GetObject",
       "Resource": "arn:aws:s3:::REPLACE_WITH_BUCKET_NAME/AWSLogs/*"
     },
     {
-      "Sid": "CxMInPlaceListBucket",
+      "Sid": "CxMInPlaceListBucketREPLACE_WITH_CXM_ACCOUNT_ID",
       "Effect": "Allow",
       "Principal": { "AWS": "arn:aws:iam::REPLACE_WITH_CXM_ACCOUNT_ID:root" },
       "Action": "s3:ListBucket",
@@ -766,7 +766,7 @@ output:
       "Condition": { "StringLike": { "s3:prefix": "AWSLogs/*" } }
     },
     {
-      "Sid": "CxMInPlaceGetBucketLocation",
+      "Sid": "CxMInPlaceGetBucketLocationREPLACE_WITH_CXM_ACCOUNT_ID",
       "Effect": "Allow",
       "Principal": { "AWS": "arn:aws:iam::REPLACE_WITH_CXM_ACCOUNT_ID:root" },
       "Action": "s3:GetBucketLocation",
@@ -780,7 +780,7 @@ And the key grant:
 
 ```json
 {
-  "Sid": "CxMInPlaceDecrypt",
+  "Sid": "CxMInPlaceDecryptREPLACE_WITH_CXM_ACCOUNT_ID",
   "Effect": "Allow",
   "Principal": { "AWS": "arn:aws:iam::REPLACE_WITH_CXM_ACCOUNT_ID:root" },
   "Action": ["kms:Decrypt", "kms:DescribeKey"],
@@ -788,7 +788,7 @@ And the key grant:
 }
 ```
 
-Three points worth keeping when you adapt this:
+Four points worth keeping when you adapt this:
 
 - **Keep the three statements separate.** `s3:GetBucketLocation` does not support the
   `s3:prefix` condition key, so folding it in with `s3:ListBucket` makes AWS reject the
@@ -799,6 +799,11 @@ Three points worth keeping when you adapt this:
 - **The principal is the CXM account, not a role.** Access is narrowed by object prefix
   instead. Our submitting roles are named per tenant and per service, so naming them would
   break your policy every time one is renamed.
+- **The account id in each `Sid` is deliberate.** A bucket read by more than one CXM
+  environment carries one statement set per reader. S3 does accept two statements sharing a
+  `Sid`, but nothing can tell them apart afterwards — revoking one reader would mean
+  rewriting the other's grant too — and Terraform's own policy merge refuses a duplicate
+  `Sid` outright. Keep the suffix, and merge rather than replace.
 
 ### Opt-in mode: let Terraform own the policy
 
@@ -838,6 +843,32 @@ module "cxm_dedicated_bucket" {
 > an out-of-band *removal* of a CXM statement is silently restored and vice versa. Keep a
 > single owner per bucket policy.
 
+### Several CXM environments reading one bucket
+
+CXM may analyse the same bucket from more than one account — a staging environment
+alongside production, for example. Each reader needs its own trust statement, because
+external IDs are per environment and a single `StringEquals` with several values is an OR
+that would let any reader in with any external ID.
+
+Declare the extra readers instead of deploying a second stack:
+
+```hcl
+module "cxm_integration" {
+  # ...
+  cxm_aws_account_id = "REPLACE_WITH_CXM_ACCOUNT_ID"
+  cxm_external_id    = "REPLACE_WITH_CXM_EXTERNAL_ID"
+
+  additional_cxm_readers = [
+    { account_id = "REPLACE_WITH_SECOND_CXM_ACCOUNT_ID", external_id = "REPLACE_WITH_SECOND_EXTERNAL_ID" },
+  ]
+}
+```
+
+Each entry adds one trust statement on every reader role and one in-place statement set,
+`Sid`-suffixed with its account id, to the rendered bucket and key policies. Additional
+readers are always account-delegated (`:root`); `cxm_role_name` narrows the primary reader
+only.
+
 ---
 
 ## Optional Configuration
@@ -859,6 +890,7 @@ These variables can be added to any scenario above:
 | `flowlogs_bucket_name` | `null` | S3 bucket storing centralized VPC Flow Logs (required when Flow Logs analysis is enabled) |
 | `flowlogs_kms_key_arn` | `null` | KMS key ARN for encrypted Flow Logs data in S3 |
 | `enable_scheduling` | `false` | Enable scheduling and scaling permissions for FinOps cost optimization |
+| `additional_cxm_readers` | `[]` | Extra CXM accounts reading the same buckets, each with its own external ID (see [Several CXM environments reading one bucket](#several-cxm-environments-reading-one-bucket)) |
 ### Example with optional variables
 
 ```hcl
