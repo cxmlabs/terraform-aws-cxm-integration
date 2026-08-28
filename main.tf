@@ -105,10 +105,9 @@ module "enable_cloudtrail" {
   s3_bucket_name         = var.cloudtrail_bucket_name
   s3_bucket_kms_key_arn  = var.s3_kms_key_arn
 
-  inplace_query_object_prefix  = var.cloudtrail_inplace_query_object_prefix
-  manage_bucket_policy         = var.cloudtrail_manage_bucket_policy
-  manage_kms_key_policy        = var.cloudtrail_manage_kms_key_policy
-  existing_kms_key_policy_json = var.cloudtrail_existing_kms_key_policy_json
+  inplace_query_object_prefix = var.cloudtrail_inplace_query_object_prefix
+  manage_bucket_policy        = var.cloudtrail_enable_inplace_query
+  manage_kms_grant            = var.cloudtrail_enable_inplace_query
 
   tags = local.tags
 }

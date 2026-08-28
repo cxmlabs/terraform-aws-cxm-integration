@@ -87,16 +87,10 @@ variable "merge_existing_bucket_policy" {
   description = "When manage_bucket_policy is `true`, read the bucket's current policy and merge into it instead of replacing it. Set to `false` only for a bucket that has no policy at all — the read fails otherwise."
 }
 
-variable "manage_kms_key_policy" {
+variable "manage_kms_grant" {
   type        = bool
   default     = false
-  description = "Set to `true` to let Terraform own the KMS key policy of s3_bucket_kms_key_arn. Requires existing_kms_key_policy_json. Leave `false` to take the statement from the outputs instead."
-}
-
-variable "existing_kms_key_policy_json" {
-  type        = string
-  default     = null
-  description = "Current policy of s3_bucket_kms_key_arn, merged with the CXM decrypt statement. Required when manage_kms_key_policy is `true`: the AWS provider exposes no data source for a key policy, and replacing one without its administrative statements makes the key unmanageable."
+  description = "Set to `true` to grant each reader account kms:Decrypt on s3_bucket_kms_key_arn via a KMS grant. Additive: it never reads or replaces the key policy, so the key's existing statements (e.g. Control Tower's) are left untouched. No effect when s3_bucket_kms_key_arn is null."
 }
 
 variable "tags" {

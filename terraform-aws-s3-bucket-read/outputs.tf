@@ -33,11 +33,6 @@ output "inplace_query_bucket_policy_statements_json" {
   description = "Bucket policy statements granting CXM in-place query access. Merge these into the bucket's existing policy when manage_bucket_policy is `false`."
 }
 
-output "inplace_query_kms_key_policy_statement_json" {
-  value       = one(data.aws_iam_policy_document.cxm_inplace_kms_statement[*].json)
-  description = "KMS key policy statement granting CXM decrypt access. Merge this into the key's existing policy when manage_kms_key_policy is `false`. Null when the bucket is not encrypted with a customer managed key."
-}
-
 output "inplace_query_object_prefix" {
   value       = local.inplace_object_prefix
   description = "Object key prefix the in-place query grant is narrowed to."

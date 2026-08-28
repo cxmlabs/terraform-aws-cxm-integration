@@ -41,7 +41,7 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 | [aws_iam_role.cxm_feedback_loop_iam_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.cxm_cross_account_eventbridge_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.cxm_s3_ro_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_kms_key_policy.cxm_inplace](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key_policy) | resource |
+| [aws_kms_grant.cxm_inplace](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_grant) | resource |
 | [aws_s3_bucket_notification.bucket_notification](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_notification) | resource |
 | [aws_s3_bucket_policy.cxm_inplace](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [random_id.uniq](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
@@ -49,8 +49,6 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 | [aws_iam_policy_document.cxm_cross_account_eventbridge_put_events](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cxm_inplace_bucket_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cxm_inplace_bucket_statements](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_policy_document.cxm_inplace_kms_key_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_policy_document.cxm_inplace_kms_statement](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cxm_s3_ro_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_s3_bucket_policy.existing](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/s3_bucket_policy) | data source |
@@ -74,8 +72,7 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 | inplace_query_object_prefix | Object key prefix the in-place query grant is narrowed to. A trailing `/` is added automatically. | `string` | `"AWSLogs"` | no |
 | manage_bucket_policy | Set to `true` only for a bucket dedicated to this integration. Terraform then owns the bucket policy. Leave `false` for CloudTrail and VPC Flow Logs buckets: they carry AWS log-delivery statements, and taking ownership risks breaking log delivery. In the default mode the required statements are exposed as outputs for you to merge into your own policy. | `bool` | `false` | no |
 | merge_existing_bucket_policy | When manage_bucket_policy is `true`, read the bucket's current policy and merge into it instead of replacing it. Set to `false` only for a bucket that has no policy at all — the read fails otherwise. | `bool` | `true` | no |
-| manage_kms_key_policy | Set to `true` to let Terraform own the KMS key policy of s3_bucket_kms_key_arn. Requires existing_kms_key_policy_json. Leave `false` to take the statement from the outputs instead. | `bool` | `false` | no |
-| existing_kms_key_policy_json | Current policy of s3_bucket_kms_key_arn, merged with the CXM decrypt statement. Required when manage_kms_key_policy is `true`: the AWS provider exposes no data source for a key policy, and replacing one without its administrative statements makes the key unmanageable. | `string` | `null` | no |
+| manage_kms_grant | Set to `true` to grant each reader account kms:Decrypt on s3_bucket_kms_key_arn via a KMS grant. Additive: it never reads or replaces the key policy, so the key's existing statements (e.g. Control Tower's) are left untouched. No effect when s3_bucket_kms_key_arn is null. | `bool` | `false` | no |
 | tags | A map/dictionary of Tags to be assigned to created resources | `map(string)` | `{}` | no |
 | additional_cxm_readers | Extra Cloud ex Machina accounts that read this bucket, each with its own external ID. Adds a trust statement on the reader role and an in-place query statement set on the bucket (and key) per entry, so several CXM tenants can share one bucket. | ```list(object({ account_id = string external_id = string }))``` | `[]` | no |
 
@@ -90,6 +87,5 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 | prefix | Prefix used for all resource names. |
 | cxm_aws_account_id | CXM AWS account ID trusted by the IAM role. |
 | inplace_query_bucket_policy_statements_json | Bucket policy statements granting CXM in-place query access. Merge these into the bucket's existing policy when manage_bucket_policy is `false`. |
-| inplace_query_kms_key_policy_statement_json | KMS key policy statement granting CXM decrypt access. Merge this into the key's existing policy when manage_kms_key_policy is `false`. Null when the bucket is not encrypted with a customer managed key. |
 | inplace_query_object_prefix | Object key prefix the in-place query grant is narrowed to. |
 <!-- END_TF_DOCS -->
