@@ -11,7 +11,7 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 ### Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | terraform | >= 1.5.0 |
 | aws | >= 3.74.0 |
 | random | >= 2.1 |
@@ -19,20 +19,21 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 ### Providers
 
 | Name | Version |
-| ---- | ------- |
-| random | >= 2.1 |
-| aws | >= 3.74.0 |
+|------|---------|
+| aws.kms | 6.62.0 |
+| random | 3.9.0 |
+| aws | 6.62.0 |
 
 ### Modules
 
 | Name | Source | Version |
-| ---- | ------ | ------- |
+|------|--------|---------|
 | cxm_cfg_iam_role | ../terraform-aws-iam-role | n/a |
 
 ### Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_cloudwatch_event_rule.cxm_bucket_event_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_target.cxm_data_plane_bus](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
 | [aws_iam_policy.cxm_cross_account_eventbridge_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
@@ -57,7 +58,7 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 ### Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | use_existing_iam_role | Set this to true to use an existing IAM role | `bool` | `false` | no |
 | use_existing_iam_role_policy | Set this to `true` to use an existing policy on the IAM role, rather than attaching a new one | `bool` | `false` | no |
 | iam_role_arn | The IAM role ARN is required when setting use_existing_iam_role to `true` | `string` | `null` | no |
@@ -81,7 +82,7 @@ This module enables CXM roles to read *Cost and Usage Report* (CUR) bucket, and 
 ### Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | external_id | The External ID configured into the IAM role |
 | iam_role_name | The IAM Role name |
 | iam_role_arn | The IAM Role ARN |

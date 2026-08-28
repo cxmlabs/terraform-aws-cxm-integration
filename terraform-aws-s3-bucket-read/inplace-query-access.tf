@@ -127,9 +127,10 @@ data "aws_iam_policy_document" "cxm_inplace_kms_key_policy" {
 }
 
 resource "aws_kms_key_policy" "cxm_inplace" {
-  count  = var.manage_kms_key_policy ? 1 : 0
-  key_id = var.s3_bucket_kms_key_arn
-  policy = data.aws_iam_policy_document.cxm_inplace_kms_key_policy[count.index].json
+  provider = aws.kms
+  count    = var.manage_kms_key_policy ? 1 : 0
+  key_id   = var.s3_bucket_kms_key_arn
+  policy   = data.aws_iam_policy_document.cxm_inplace_kms_key_policy[count.index].json
 
   lifecycle {
     precondition {

@@ -194,23 +194,23 @@ provider "aws" {
 ### Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | terraform | >= 1.5.0 |
 | aws | >= 5.0 |
 
 ### Providers
 
 | Name | Version |
-| ---- | ------- |
-| aws.root | 6.58.0 |
-| aws.cur | 6.58.0 |
-| aws.cloudtrail | 6.58.0 |
-| aws.flowlogs | 6.58.0 |
+|------|---------|
+| aws.root | 6.62.0 |
+| aws.cur | 6.62.0 |
+| aws.cloudtrail | 6.62.0 |
+| aws.flowlogs | 6.62.0 |
 
 ### Modules
 
 | Name | Source | Version |
-| ---- | ------ | ------- |
+|------|--------|---------|
 | enable_root_organization | ./terraform-aws-organization-enablement | n/a |
 | enable_sub_accounts | ./terraform-aws-full-organization-enablement | n/a |
 | enable_lone_account | ./terraform-aws-account-enablement | n/a |
@@ -221,7 +221,7 @@ provider "aws" {
 ### Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_caller_identity.cloudtrail](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_caller_identity.cur](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_caller_identity.flowlogs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
@@ -235,7 +235,7 @@ provider "aws" {
 ### Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | cxm_aws_account_id | The Cloud ex Machina AWS account that the IAM role will grant access to. Provided by CXM. | `string` | n/a | yes |
 | cxm_external_id | External ID to use in the trust relationship. Provided by CXM. | `string` | n/a | yes |
 | cost_usage_report_bucket_name | Name of the bucket that is used to store CUR data. Required when disable_cur_analysis is false (the default). | `string` | `null` | no |
@@ -251,6 +251,10 @@ provider "aws" {
 | deployment_targets | Add a filter, and list of Organizational Units from the Organization to only deploy to. If left blank, all organization will be crawled by default. | `set(any)` | `[]` | no |
 | permission_boundary_arn | Optional - ARN of the policy that is used to set the permissions boundary for the role. | `string` | `null` | no |
 | s3_kms_key_arn | Optional - ARN of the KMS Key that is used to encrypt CUR data | `string` | `null` | no |
+| cloudtrail_manage_bucket_policy | Let Terraform own the CloudTrail bucket policy and merge the in-place query statements into it. Leave `false` to take the statements from the outputs and merge them yourself. | `bool` | `false` | no |
+| cloudtrail_manage_kms_key_policy | Let Terraform own the CloudTrail KMS key policy and merge the in-place decrypt statement into it. Requires s3_kms_key_arn and cloudtrail_existing_kms_key_policy_json. Applied in the aws.root (management) account, where the Control Tower CloudTrail key lives. | `bool` | `false` | no |
+| cloudtrail_existing_kms_key_policy_json | Current policy of the CloudTrail KMS key, merged with the CXM decrypt statement. Required when cloudtrail_manage_kms_key_policy is `true`: AWS exposes no data source for a key policy, and replacing one without its administrative statements makes the key unmanageable. | `string` | `null` | no |
+| cloudtrail_inplace_query_object_prefix | Object key prefix the CloudTrail in-place query grant is narrowed to (e.g. `o-xxxx/AWSLogs/o-xxxx/` for an organization trail). | `string` | `"AWSLogs"` | no |
 | flowlogs_bucket_name | Name of the S3 bucket storing centralized VPC Flow Logs. Required when disable_flowlogs_analysis is false. | `string` | `null` | no |
 | flowlogs_kms_key_arn | Optional - ARN of the KMS key used to encrypt VPC Flow Logs data in S3. | `string` | `null` | no |
 | prefix | Optional - prefix for key constructs created by this module. | `string` | `"cxm"` | no |
@@ -261,7 +265,7 @@ provider "aws" {
 ### Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | lone_account_iam_role_arn | ARN of the CXM IAM role for lone account deployment |
 | organization_iam_role_arn | ARN of the CXM IAM role for organization root deployment |
 | cxm_iam_role_name | Name of the CXM IAM role deployed in the root account (organization crawler, or the lone-account role). NOT the role to use for EKS cluster enablement in an Organization deployment - see cxm_eks_iam_role_name. |

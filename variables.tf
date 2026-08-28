@@ -91,6 +91,30 @@ variable "s3_kms_key_arn" {
   description = "Optional - ARN of the KMS Key that is used to encrypt CUR data"
 }
 
+variable "cloudtrail_manage_bucket_policy" {
+  type        = bool
+  default     = false
+  description = "Let Terraform own the CloudTrail bucket policy and merge the in-place query statements into it. Leave `false` to take the statements from the outputs and merge them yourself."
+}
+
+variable "cloudtrail_manage_kms_key_policy" {
+  type        = bool
+  default     = false
+  description = "Let Terraform own the CloudTrail KMS key policy and merge the in-place decrypt statement into it. Requires s3_kms_key_arn and cloudtrail_existing_kms_key_policy_json. Applied in the aws.root (management) account, where the Control Tower CloudTrail key lives."
+}
+
+variable "cloudtrail_existing_kms_key_policy_json" {
+  type        = string
+  default     = null
+  description = "Current policy of the CloudTrail KMS key, merged with the CXM decrypt statement. Required when cloudtrail_manage_kms_key_policy is `true`: AWS exposes no data source for a key policy, and replacing one without its administrative statements makes the key unmanageable."
+}
+
+variable "cloudtrail_inplace_query_object_prefix" {
+  type        = string
+  default     = "AWSLogs"
+  description = "Object key prefix the CloudTrail in-place query grant is narrowed to (e.g. `o-xxxx/AWSLogs/o-xxxx/` for an organization trail)."
+}
+
 variable "flowlogs_bucket_name" {
   type        = string
   default     = null
