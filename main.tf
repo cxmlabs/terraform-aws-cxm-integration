@@ -68,7 +68,8 @@ module "enable_cur" {
   count = local.enable_cur ? 1 : 0
 
   providers = {
-    aws = aws.cur
+    aws     = aws.cur
+    aws.kms = aws.cur
   }
 
   iam_role_external_id = var.cxm_external_id
@@ -90,6 +91,9 @@ module "enable_cloudtrail" {
 
   providers = {
     aws = aws.cloudtrail
+    # CloudTrail's KMS key lives in the organization management account, not the log-archive
+    # account that holds the bucket.
+    aws.kms = aws.root
   }
 
   iam_role_external_id = var.cxm_external_id
@@ -100,7 +104,12 @@ module "enable_cloudtrail" {
   additional_cxm_readers = var.additional_cxm_readers
   s3_bucket_name         = var.cloudtrail_bucket_name
   s3_bucket_kms_key_arn  = var.s3_kms_key_arn
-  tags                   = local.tags
+
+  inplace_query_object_prefix = var.cloudtrail_inplace_query_object_prefix
+  manage_bucket_policy        = var.cloudtrail_enable_inplace_query
+  manage_kms_grant            = var.cloudtrail_enable_inplace_query
+
+  tags = local.tags
 }
 
 # VPC FLOW LOGS
@@ -110,7 +119,8 @@ module "enable_flowlogs" {
   count = local.enable_flowlogs ? 1 : 0
 
   providers = {
-    aws = aws.flowlogs
+    aws     = aws.flowlogs
+    aws.kms = aws.flowlogs
   }
 
   iam_role_external_id = var.cxm_external_id

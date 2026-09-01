@@ -91,6 +91,18 @@ variable "s3_kms_key_arn" {
   description = "Optional - ARN of the KMS Key that is used to encrypt CUR data"
 }
 
+variable "cloudtrail_enable_inplace_query" {
+  type        = bool
+  default     = false
+  description = "Grant the CXM reader accounts in-place Athena query access to the CloudTrail bucket: merges the read statements into the live bucket policy and adds a KMS grant for s3_kms_key_arn (in the aws.root management account, where the Control Tower CloudTrail key lives). Nothing in the existing bucket or key policy is re-declared."
+}
+
+variable "cloudtrail_inplace_query_object_prefix" {
+  type        = string
+  default     = "AWSLogs"
+  description = "Object key prefix the CloudTrail in-place query grant is narrowed to (e.g. `o-xxxx/AWSLogs/o-xxxx/` for an organization trail)."
+}
+
 variable "flowlogs_bucket_name" {
   type        = string
   default     = null
