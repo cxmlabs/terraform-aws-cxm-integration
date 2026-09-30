@@ -181,6 +181,23 @@ data "aws_iam_policy_document" "cxm_savings_modifications_policy" {
     ]
     resources = ["*"]
   }
+
+  statement {
+    # Tag commitments CXM buys (RDS/ElastiCache/MemoryDB at purchase, EC2 right after); reservation ARNs only
+    sid = "CommitmentTaggingPermissions"
+    actions = [
+      "ec2:CreateTags",
+      "rds:AddTagsToResource",
+      "elasticache:AddTagsToResource",
+      "memorydb:TagResource",
+    ]
+    resources = [
+      "arn:aws:ec2:*:*:reserved-instances/*",
+      "arn:aws:rds:*:*:ri:*",
+      "arn:aws:elasticache:*:*:reserved-instance:*",
+      "arn:aws:memorydb:*:*:reservednode/*",
+    ]
+  }
 }
 
 resource "aws_iam_policy" "cxm_read_only_policy" {
