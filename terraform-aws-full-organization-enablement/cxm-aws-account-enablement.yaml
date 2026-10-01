@@ -208,6 +208,19 @@ Resources:
               # Saving Plans full management
               # - savingsplans:*
               # NOTE: this is handled by the `arn:aws:iam::aws:policy/AWSSavingsPlansFullAccess` policy attached above - dpanofsky
+          # Tag commitments CXM buys (RDS/ElastiCache/MemoryDB at purchase, EC2 right after); reservation ARNs only
+          - Effect: Allow
+            Sid: CommitmentTaggingPermissions
+            Action:
+              - ec2:CreateTags
+              - rds:AddTagsToResource
+              - elasticache:AddTagsToResource
+              - memorydb:TagResource
+            Resource:
+              - "arn:aws:ec2:*:*:reserved-instances/*"
+              - "arn:aws:rds:*:*:ri:*"
+              - "arn:aws:elasticache:*:*:reserved-instance:*"
+              - "arn:aws:memorydb:*:*:reservednode/*"
 
   ################################################################
   #
