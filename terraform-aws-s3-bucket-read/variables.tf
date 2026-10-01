@@ -72,13 +72,13 @@ variable "cxm_s3_read_policy_name" {
 variable "inplace_query_object_prefix" {
   type        = string
   default     = "AWSLogs"
-  description = "Object key prefix the in-place query grant is narrowed to. A trailing `/` is added automatically."
+  description = "Object key prefix the in-place query grant is narrowed to, ending at the directory that holds the per-account subtrees. A trailing `/` is added automatically. The default suits a bucket AWS writes at the root; one with a segment above (`terra-vpc/AWSLogs`, `cloudtrail/AWSLogs`) must say so, since a prefix matching no object grants nothing. Append the account id to narrow a shared bucket to one subtree."
 }
 
 variable "manage_bucket_policy" {
   type        = bool
-  default     = false
-  description = "Set to `true` only for a bucket dedicated to this integration. Terraform then owns the bucket policy. Leave `false` for CloudTrail and VPC Flow Logs buckets: they carry AWS log-delivery statements, and taking ownership risks breaking log delivery. In the default mode the required statements are exposed as outputs for you to merge into your own policy."
+  default     = true
+  description = "Write the in-place query statements onto the bucket policy. Athena reads S3 as the account submitting the query and never as the reader role, so without these statements the integration registers tables it cannot read. Log-delivery statements survive while merge_existing_bucket_policy stays `true`. Set to `false` only when another resource already owns this bucket's policy, then merge the inplace_query_bucket_policy_statements_json output into that one."
 }
 
 variable "merge_existing_bucket_policy" {
